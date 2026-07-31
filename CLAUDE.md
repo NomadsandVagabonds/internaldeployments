@@ -1,28 +1,40 @@
-# IDM Disclosure Microsite — Project Instructions
+# internaldeployments.ai — Project Instructions
 
-Independent policy reference site for the paper *"What Should Frontier AI Developers Disclose About Internal Deployments?"* (arXiv:2604.23065). Authors: Jacob Charnock, Raja Mehta Moreno, Justin Miller, William L. Anderson.
+Independent policy reference site for internal deployment (IDM) governance, built around the paper *"What Should Frontier AI Developers Disclose About Internal Deployments?"* (arXiv:2604.23065v2). Authors: Jacob Charnock, Raja Mehta Moreno, Justin Miller, William L. Anderson.
 
 ## Project context
 
-- **Local:** `/Users/nomads/Nomads/IDM/site/`
-- **Remote target:** `github.com/nomads/IDM`
+- **Local:** `/Users/nomads/internaldeployments/` (standalone repo, lifted out of the Nomads monorepo 2026-07-31)
+- **Remote:** `github.com/NomadsandVagabonds/internaldeployments`
 - **Stack:** Astro (static-first, light client interactivity)
-- **Hosting target:** Cloudflare Pages or Vercel (TBD — static export must work on both)
-- **Attribution:** Site is paper-attributed only. **Do not** add Resonant Research or MATS branding, footers, logos, or color palettes from the parent monorepo. Authors are credited in citation footer only.
+- **Hosting:** Vercel — `internaldeployments.vercel.app`
+- **Domain:** `internaldeployments.ai` / `.com` are NOT attached. Both still URL301 to arXiv via Namecheap. **Do not point DNS without explicit go-ahead** — publication is gated on co-author review of the scorecard.
+- **Attribution:** Site is paper-attributed only. **Do not** add Resonant Research or MATS branding, logos, or palette tokens from the parent monorepo. Authors appear in the citation footer, not in site chrome.
 
 ## Source material
 
-- `2604.23065v1.pdf` — the paper itself (extract Table 1 and category text from here for the framework page; user will proof)
-- `idm_legislation_tracker_v3_primary_links.html` — current tracker MVP (treat as **seed dataset of truth** — extract its rows into structured JSON, then upgrade per scope doc)
-- `idm-microsite-scope.md` — full project scope, site structure, open questions, timeline
+- `docs/internal_deployments.pdf` — the paper (v2, 1 July 2026)
+- `docs/internal_deployments.bib` — 54-entry bibliography, seed for the resources page
+- `docs/idm-microsite-scope.md` — original project scope
 - `.impeccable.md` — **design context (read this before any UI work)**
 
 ## Site structure
 
-1. **Landing** — paper title, one-paragraph summary, author info, arXiv link, last-updated, nav to three core sections
-2. **`/framework`** — Table 1 rendered cleanly, four categories expandable with paper's benefits/risks analysis, downloadable checklist, optional public-vs-confidential toggle
-3. **`/tracker`** — upgraded legislation tracker, filterable, sortable, per-row permalinks, mobile-clean
-4. **`/resources`** — referenced documents, reading list, contact
+1. **Landing** — paper title, real abstract, arXiv link, last-updated, section index
+2. **`/framework`** — Table 1 rendered cleanly, four categories expandable with the paper's benefits/risks analysis, public-vs-confidential toggle
+3. **`/scorecard`** — six frontier developers graded against all fifteen disclosure questions, plus `/scorecard/[developer]` and `/scorecard/methodology`
+4. **`/tracker`** — legislation tracker, filterable, sortable, per-row permalinks
+5. **`/checklist`** — fillable public and confidential templates with worked examples
+6. **`/resources`** — annotated bibliography, primary legal texts, BibTeX
+
+## Scorecard rules (non-negotiable)
+
+The scorecard assigns public grades to named companies. It measures **disclosure, not safety** — never write copy that blurs this.
+
+- Every verdict except `unassessed` cites at least one retrievable primary source. Enforced at build time by `assertScorecardIntegrity()` in `src/lib/score.ts`.
+- Never fabricate a quote, a URL, or a verdict. If a source cannot be verified, the verdict is `unassessed` and it leaves the denominator.
+- `src/data/framework.ts` item slugs are the join key for `src/data/scorecard.ts` and are permalinks. Renaming one means updating both.
+- Run `node scripts/check-links.mjs` before publishing any refresh.
 
 ## Checklist artifact
 
@@ -34,7 +46,7 @@ Format: real fillable HTML form with URL state + print-to-PDF, plus markdown sou
 
 ## Maintenance
 
-User (Justin) owns refresh cadence. Quarterly minimum to align with SB 53 OES reporting cycles. Tracker data lives in JSON so non-dev co-authors can update via PR.
+User (Justin) owns refresh cadence. Quarterly minimum to align with SB 53 OES reporting cycles. Tracker and scorecard data live in typed TS files so non-dev co-authors can update via PR. Bump `lastUpdatedISO` in `src/data/site.ts` on every refresh, and add a changelog line to the scorecard methodology page when verdicts change.
 
 ## Build conventions
 
