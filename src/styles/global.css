@@ -235,6 +235,30 @@ hr {
   border-top: 1px solid var(--hairline-strong);
 }
 
+/* inline forward link — was duplicated in several page-scoped blocks */
+.btn-link {
+  color: var(--ink);
+  border-bottom: 1px solid var(--hairline-strong);
+  font-size: 0.9375rem;
+}
+.btn-link:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
+}
+
+/* visible to screen readers only — used where a glyph carries the meaning */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* skip link for keyboard nav — fixed, not absolute, so it hides against the
    viewport rather than painting at the top of the document flow */
 .skip-link {

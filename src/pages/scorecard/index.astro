@@ -1,0 +1,392 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import VerdictMark from '@/components/VerdictMark.astro';
+import { categories } from '@/data/framework';
+import { developers } from '@/data/scorecard';
+import { lastUpdated } from '@/data/site';
+import {
+  assertScorecardIntegrity,
+  categoryScore,
+  cellFor,
+  overallScore,
+  rankedDevelopers,
+  weightFor,
+} from '@/lib/score';
+
+// Fails the build rather than shipping a cell that grades a developer without
+// citing anything. See src/lib/score.ts.
+assertScorecardIntegrity(developers);
+
+const ranked = rankedDevelopers(developers);
+
+const totalCells = developers.length * categories.reduce((n, c) => n + c.disclosures.length, 0);
+const emptyCells = developers.reduce(
+  (n, d) => n + d.cells.filter((c) => c.verdict === 'none' || c.verdict === 'adjacent').length,
+  0,
+);
+const emptyShare = Math.round((emptyCells / totalCells) * 100);
+---
+
+<BaseLayout
+  title="Scorecard"
+  description="Six frontier developers graded against the fifteen disclosure questions in Table 1, on the evidence of what they publish about their internally deployed models."
+>
+  <article class="sc">
+    <!-- ===== Hero ===== -->
+    <header class="sc-hero">
+      <div class="shell shell--prose">
+        <p class="eyebrow">Section 02 · Scorecard</p>
+        <h1 class="sc-hero__title">What developers actually disclose about their internal deployments</h1>
+        <p class="lede">
+          Six frontier developers, graded against all fifteen disclosure questions in the framework,
+          on the evidence of what they have published. Every verdict cites a primary source.
+        </p>
+
+        <aside class="caveat">
+          <p class="eyebrow">Read this first</p>
+          <p class="caveat__text">
+            This grades <strong>disclosure</strong>, not safety. A high score means a developer has
+            published a great deal about its internal deployments — not that those deployments are
+            safe. A low score means we found little published — not that a developer's internal
+            practices are poor. Most of what happens inside a frontier lab is unobservable from
+            outside, which is the argument for disclosure in the first place.
+          </p>
+        </aside>
+
+        <p class="sc-hero__summary">
+          As of <strong>{lastUpdated}</strong>, <strong>{emptyShare}%</strong> of the
+          {totalCells} developer-question pairs assessed here are answered obliquely or not at all.
+          The strongest disclosure clusters in <strong>safety mitigations</strong>, where three
+          developers publish real detail about how internal agents are monitored. The weakest is
+          <strong>capabilities</strong>: one developer has published a substantive account of how
+          its internal models diverge from the models it ships, and no developer has disclosed how
+          internal inference is allocated between the two.
+        </p>
+
+        <div class="sc-hero__actions">
+          <a href="/scorecard/methodology" class="btn-link">
+            How these grades are assigned <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <hr class="rule rule-strong" />
+
+    <!-- ===== Overview grid ===== -->
+    <section class="sc-grid-section">
+      <div class="shell shell--table">
+        <p class="eyebrow">Overview</p>
+        <h2 class="section-title">By category</h2>
+        <p class="section-note">
+          Category scores weight the framework's four priority disclosures double. The overall
+          figure is the unweighted mean of the four category scores — the paper ranks disclosures
+          within categories but never ranks the categories against each other.
+        </p>
+
+        <div class="grid-scroll">
+          <table class="sc-grid">
+            <thead>
+              <tr>
+                <th scope="col" class="sc-grid__dev">Developer</th>
+                {categories.map((c) => (
+                  <th scope="col" class="sc-grid__cat">{c.name}</th>
+                ))}
+                <th scope="col" class="sc-grid__total">Overall</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ranked.map((dev) => {
+                const overall = overallScore(dev);
+                return (
+                  <tr>
+                    <th scope="row" class="sc-grid__dev">
+                      <a href={`/scorecard/${dev.slug}`}>{dev.name}</a>
+                    </th>
+                    {categories.map((c) => {
+                      const s = categoryScore(dev, c.slug);
+                      return (
+                        <td class="sc-grid__cat">
+                          <span class="pct" style={`--fill:${s.percent ?? 0}%`}>
+                            <span class="pct__bar" aria-hidden="true"></span>
+                            <span class="pct__num mono">{s.percent === null ? '—' : `${s.percent}%`}</span>
+                          </span>
+                        </td>
+                      );
+                    })}
+                    <td class="sc-grid__total">
+                      <span class="mono sc-grid__totalnum">{overall === null ? '—' : `${overall}%`}</span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ===== Item-by-item ===== -->
+    <section class="sc-items">
+      <div class="shell shell--table">
+        <p class="eyebrow">Detail</p>
+        <h2 class="section-title">Question by question</h2>
+        <p class="section-note">
+          All fifteen disclosure questions from Table 1. Rows marked
+          <span class="prio-key">priority</span> are the four the paper singles out as offering
+          significant benefit at minimal burden; they carry double weight. Follow any developer
+          name for the cited evidence behind each verdict.
+        </p>
+
+        {categories.map((category) => (
+          <div class="cat-block" id={category.slug}>
+            <h3 class="cat-block__title">
+              <span class="cat-block__num mono">{category.number}</span>
+              {category.name}
+            </h3>
+
+            <div class="grid-scroll">
+              <table class="sc-items__table">
+                <thead>
+                  <tr>
+                    <th scope="col" class="q-col">Disclosure question</th>
+                    {ranked.map((dev) => (
+                      <th scope="col" class="d-col">
+                        <a href={`/scorecard/${dev.slug}`}>{dev.shortName}</a>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {category.disclosures.map((item) => (
+                    <tr id={`${category.slug}-${item.slug}`}>
+                      <th scope="row" class="q-col">
+                        <span class="q-col__text">{item.question}</span>
+                        {item.priority && <span class="prio-key">priority · ×{weightFor(item)}</span>}
+                      </th>
+                      {ranked.map((dev) => {
+                        const cell = cellFor(dev, item.slug);
+                        return (
+                          <td class="d-col">
+                            <a
+                              href={`/scorecard/${dev.slug}#${item.slug}`}
+                              class="cell-link"
+                              aria-label={`${dev.name} — ${item.question}`}
+                            >
+                              <VerdictMark verdict={cell?.verdict ?? 'unassessed'} compact />
+                            </a>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+
+        <div class="legend">
+          <p class="eyebrow">Key</p>
+          <ul class="legend__list">
+            <li><VerdictMark verdict="meets" /> — answers the question for internal models, with specifics</li>
+            <li><VerdictMark verdict="partial" /> — addressed, but not internal-model-specific or lacking specificity</li>
+            <li><VerdictMark verdict="adjacent" /> — touched obliquely, or covers public models only</li>
+            <li><VerdictMark verdict="none" /> — no public statement addressing it</li>
+            <li><VerdictMark verdict="unassessed" /> — could not verify; excluded from scoring</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ===== Per-developer summaries ===== -->
+    <section class="sc-devs">
+      <div class="shell shell--table">
+        <p class="eyebrow">Developers</p>
+        <h2 class="section-title">Where each one stands</h2>
+
+        {ranked.map((dev) => (
+          <article class="dev-row" id={dev.slug}>
+            <div class="dev-row__head">
+              <h3 class="dev-row__name">
+                <a href={`/scorecard/${dev.slug}`}>{dev.name}</a>
+              </h3>
+              <span class="dev-row__score mono">{overallScore(dev) ?? '—'}%</span>
+            </div>
+            <p class="dev-row__note">{dev.note}</p>
+            <a href={`/scorecard/${dev.slug}`} class="btn-link">
+              All fifteen verdicts with sources <span aria-hidden="true">→</span>
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .sc-hero { padding-block: var(--s-8) var(--s-6); }
+  .sc-hero__title {
+    font-size: var(--step-4);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--s-5);
+  }
+  .sc-hero__summary {
+    margin-top: var(--s-6);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+  .sc-hero__actions { margin-top: var(--s-6); }
+
+  .caveat {
+    margin-top: var(--s-6);
+    border-left: 2px solid var(--accent);
+    padding: var(--s-1) 0 var(--s-1) var(--s-5);
+  }
+  .caveat__text {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--ink-muted);
+    margin: var(--s-2) 0 0;
+  }
+
+  .section-title {
+    font-size: var(--step-2);
+    margin: var(--s-2) 0 var(--s-3);
+  }
+  .section-note {
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    max-width: 46rem;
+    margin-bottom: var(--s-6);
+  }
+
+  .sc-grid-section, .sc-items, .sc-devs { padding-block: var(--s-7); }
+
+  /* wide tables scroll inside their own box; the page never scrolls sideways */
+  .grid-scroll { overflow-x: auto; }
+
+  .sc-grid, .sc-items__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+  .sc-grid th, .sc-grid td,
+  .sc-items__table th, .sc-items__table td {
+    text-align: left;
+    padding: var(--s-4) var(--s-4) var(--s-4) 0;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: baseline;
+  }
+  .sc-grid thead th, .sc-items__table thead th {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    border-bottom-color: var(--hairline-strong);
+    white-space: nowrap;
+  }
+
+  .sc-grid__dev { min-width: 11rem; font-weight: 400; }
+  .sc-grid__dev a { border-bottom-color: var(--hairline); }
+  .sc-grid__cat { min-width: 8.5rem; }
+  .sc-grid__total { min-width: 6rem; }
+  .sc-grid__totalnum { font-size: 1.0625rem; color: var(--ink); }
+
+  /* percentage with a hairline fill rule underneath — an editorial rule, not a
+     dashboard bar */
+  .pct { display: inline-flex; flex-direction: column; gap: var(--s-2); min-width: 4.5rem; }
+  .pct__bar {
+    height: 2px;
+    background: var(--hairline);
+    position: relative;
+    order: 2;
+  }
+  .pct__bar::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--fill);
+    background: var(--accent);
+  }
+  .pct__num { order: 1; font-size: 0.9375rem; color: var(--ink); }
+
+  .cat-block { margin-bottom: var(--s-8); }
+  .cat-block__title {
+    font-size: var(--step-1);
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-4);
+    margin-bottom: var(--s-4);
+  }
+  .cat-block__num { color: var(--ink-faint); font-size: 0.8125rem; }
+
+  .q-col { min-width: 22rem; font-weight: 400; }
+  .q-col__text { display: block; line-height: 1.5; color: var(--ink); }
+  .d-col { width: 6rem; text-align: center !important; }
+  .sc-items__table thead .d-col { text-align: center; }
+  .cell-link { border-bottom: 0; display: inline-block; padding: var(--s-2); }
+  .cell-link:hover { background: var(--accent-soft); border-radius: var(--r-sm); }
+
+  .prio-key {
+    display: inline-block;
+    margin-top: var(--s-2);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--citation);
+  }
+
+  .legend { margin-top: var(--s-6); }
+  .legend__list {
+    list-style: none;
+    padding: 0;
+    margin: var(--s-3) 0 0;
+    display: grid;
+    gap: var(--s-3);
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+  }
+  .legend__list li { margin: 0; }
+
+  .dev-row {
+    padding-block: var(--s-6);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .dev-row:last-child { border-bottom: 0; }
+  .dev-row__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-5);
+    margin-bottom: var(--s-3);
+  }
+  .dev-row__name { font-size: var(--step-1); margin: 0; }
+  .dev-row__name a { border-bottom-color: var(--hairline); }
+  .dev-row__score { font-size: 1.25rem; color: var(--ink); }
+  .dev-row__note {
+    color: var(--ink-muted);
+    line-height: 1.65;
+    max-width: 46rem;
+    margin-bottom: var(--s-4);
+  }
+
+  @media (max-width: 720px) {
+    .q-col { min-width: 14rem; }
+    .sc-grid__dev { min-width: 8rem; }
+  }
+
+  @media print {
+    .grid-scroll { overflow-x: visible; }
+    .sc-hero__actions, .btn-link { display: none; }
+  }
+</style>

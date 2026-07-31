@@ -1,0 +1,338 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import VerdictMark from '@/components/VerdictMark.astro';
+import { categories } from '@/data/framework';
+import { developers, RETRIEVED, type Developer } from '@/data/scorecard';
+import { lastUpdated } from '@/data/site';
+import { categoryScore, cellFor, overallScore, weightFor, VERDICT_LABEL } from '@/lib/score';
+
+export function getStaticPaths() {
+  return developers.map((developer) => ({
+    params: { developer: developer.slug },
+    props: { developer },
+  }));
+}
+
+interface Props {
+  developer: Developer;
+}
+
+const { developer } = Astro.props;
+const overall = overallScore(developer);
+const scores = categories.map((c) => categoryScore(developer, c.slug));
+
+// Distinct sources cited anywhere on this page, for the sources appendix.
+const sourceMap = new Map<string, { source: string; publisher: string; url: string; date: string; thirdParty?: boolean }>();
+for (const cell of developer.cells) {
+  for (const e of cell.evidence) {
+    if (!sourceMap.has(e.url + e.source)) {
+      sourceMap.set(e.url + e.source, {
+        source: e.source,
+        publisher: e.publisher,
+        url: e.url,
+        date: e.date,
+        thirdParty: e.thirdParty,
+      });
+    }
+  }
+}
+const sources = [...sourceMap.values()].sort((a, b) => b.date.localeCompare(a.date));
+
+function fmtDate(iso: string): string {
+  const parts = iso.split('-');
+  const d = new Date(iso.length === 7 ? `${iso}-01` : iso);
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    ...(parts.length === 3 ? { day: 'numeric' } : {}),
+    timeZone: 'UTC',
+  });
+}
+---
+
+<BaseLayout
+  title={`${developer.name} — Scorecard`}
+  description={`What ${developer.name} discloses about its internally deployed models, graded against all fifteen questions in the disclosure framework, with sources.`}
+>
+  <article class="dev">
+    <header class="dev-hero">
+      <div class="shell shell--prose">
+        <p class="eyebrow">
+          <a href="/scorecard">Scorecard</a> · {developer.name}
+        </p>
+        <h1 class="dev-hero__title">{developer.name}</h1>
+        <p class="dev-hero__note">{developer.note}</p>
+
+        <div class="dev-hero__scores">
+          <div class="score-overall">
+            <span class="score-overall__num mono">{overall === null ? '—' : `${overall}%`}</span>
+            <span class="score-overall__label">overall disclosure</span>
+          </div>
+          <dl class="score-cats">
+            {scores.map((s) => {
+              const cat = categories.find((c) => c.slug === s.categorySlug)!;
+              return (
+                <div class="score-cats__item">
+                  <dt>{cat.name}</dt>
+                  <dd class="mono">{s.percent === null ? '—' : `${s.percent}%`}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </div>
+      </div>
+    </header>
+
+    <hr class="rule rule-strong" />
+
+    <section class="dev-items">
+      <div class="shell shell--prose">
+        {categories.map((category) => (
+          <div class="cat" id={category.slug}>
+            <h2 class="cat__title">
+              <span class="cat__num mono">{category.number}</span>
+              {category.name}
+              <span class="cat__pct mono">
+                {categoryScore(developer, category.slug).percent ?? '—'}%
+              </span>
+            </h2>
+
+            {category.disclosures.map((item) => {
+              const cell = cellFor(developer, item.slug);
+              if (!cell) return null;
+              return (
+                <section class="item" id={item.slug}>
+                  <div class="item__head">
+                    <h3 class="item__q">
+                      <a href={`#${item.slug}`} class="item__anchor" aria-label="Permalink">§</a>
+                      {item.question}
+                    </h3>
+                    <div class="item__verdict">
+                      <VerdictMark verdict={cell.verdict} priority={item.priority} />
+                    </div>
+                  </div>
+
+                  {item.examples && <p class="item__examples">{item.examples}</p>}
+                  {item.priority && (
+                    <p class="item__prio">
+                      Priority disclosure — weighted ×{weightFor(item)}
+                    </p>
+                  )}
+
+                  <p class="item__rationale">{cell.rationale}</p>
+
+                  {cell.evidence.length > 0 && (
+                    <div class="evidence">
+                      <p class="eyebrow">
+                        {cell.evidence.length === 1 ? 'Source' : 'Sources'}
+                      </p>
+                      <ul class="evidence__list">
+                        {cell.evidence.map((e) => (
+                          <li class="evidence__item">
+                            {e.quote && <blockquote class="evidence__quote">{e.quote}</blockquote>}
+                            <p class="evidence__cite">
+                              <a href={e.url} rel="noopener">{e.source}</a>
+                              <span class="evidence__meta">{` — ${e.publisher}, ${fmtDate(e.date)}`}</span>
+                              {e.thirdParty && <span class="evidence__tp">third party</span>}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </section>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <hr class="rule" />
+
+    <section class="dev-sources">
+      <div class="shell shell--prose">
+        <p class="eyebrow">Appendix</p>
+        <h2 class="dev-sources__title">Every source cited on this page</h2>
+        <p class="dev-sources__note">
+          {sources.length} documents, retrieved {fmtDate(RETRIEVED)}. Anything
+          {developer.name} published after that date is not reflected here.
+          Assessments are of published material only — see the
+          <a href="/scorecard/methodology#corrections">corrections policy</a>.
+        </p>
+        <ol class="source-list">
+          {sources.map((s) => (
+            <li>
+              <a href={s.url} rel="noopener">{s.source}</a>
+              <span class="source-list__meta">{` — ${s.publisher}, ${fmtDate(s.date)}`}</span>
+              {s.thirdParty && <span class="evidence__tp">third party</span>}
+            </li>
+          ))}
+        </ol>
+
+        <p class="dev-sources__foot">
+          Scorecard last reviewed {lastUpdated}. Verdict scale: {' '}
+          {Object.values(VERDICT_LABEL).join(' · ')}.
+        </p>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .dev-hero { padding-block: var(--s-8) var(--s-6); }
+  .dev-hero__title {
+    font-size: var(--step-4);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--s-5);
+  }
+  .dev-hero__note {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  .dev-hero__scores {
+    margin-top: var(--s-7);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--s-7);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--hairline);
+  }
+  .score-overall { display: flex; flex-direction: column; gap: var(--s-2); }
+  .score-overall__num { font-size: 2.5rem; line-height: 1; color: var(--ink); }
+  .score-overall__label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .score-cats {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: var(--s-3) var(--s-6);
+    margin: 0;
+  }
+  .score-cats__item { display: flex; align-items: baseline; gap: var(--s-3); }
+  .score-cats dt { font-size: 0.8125rem; color: var(--ink-muted); }
+  .score-cats dd { margin: 0; font-size: 0.9375rem; color: var(--ink); }
+
+  .dev-items { padding-block: var(--s-7); }
+
+  .cat { margin-bottom: var(--s-9); }
+  .cat__title {
+    font-size: var(--step-2);
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-4);
+    padding-bottom: var(--s-4);
+    border-bottom: 1px solid var(--hairline-strong);
+    margin-bottom: var(--s-6);
+  }
+  .cat__num { color: var(--ink-faint); font-size: 0.8125rem; }
+  .cat__pct { margin-left: auto; font-size: 1rem; color: var(--ink-muted); }
+
+  .item {
+    padding-block: var(--s-6);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .item:last-child { border-bottom: 0; }
+  .item__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-5);
+    flex-wrap: wrap;
+  }
+  .item__q {
+    font-size: 1.0625rem;
+    line-height: 1.4;
+    margin: 0;
+    flex: 1 1 20rem;
+    position: relative;
+  }
+  .item__anchor {
+    color: var(--ink-faint);
+    border-bottom: 0;
+    margin-right: var(--s-2);
+    font-size: 0.875rem;
+  }
+  .item__anchor:hover { color: var(--accent); }
+  .item__verdict { flex: 0 0 auto; }
+
+  .item__examples {
+    font-size: 0.875rem;
+    color: var(--ink-muted);
+    font-style: italic;
+    margin: var(--s-2) 0 0;
+  }
+  .item__prio {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--citation);
+    margin: var(--s-3) 0 0;
+  }
+  .item__rationale {
+    margin: var(--s-4) 0 0;
+    line-height: 1.65;
+  }
+
+  .evidence {
+    margin-top: var(--s-5);
+    padding-left: var(--s-5);
+    border-left: 1px solid var(--hairline);
+  }
+  .evidence__list { list-style: none; padding: 0; margin: var(--s-3) 0 0; }
+  .evidence__item + .evidence__item { margin-top: var(--s-5); }
+  .evidence__quote {
+    margin: 0 0 var(--s-3);
+    font-family: var(--font-display);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--ink);
+    quotes: '“' '”';
+  }
+  .evidence__quote::before { content: open-quote; }
+  .evidence__quote::after { content: close-quote; }
+  .evidence__cite { margin: 0; font-size: 0.8125rem; }
+  .evidence__meta { color: var(--ink-muted); }
+  .evidence__tp {
+    display: inline-block;
+    margin-left: var(--s-2);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--citation);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-sm);
+    padding: 0 0.35em;
+  }
+
+  .dev-sources { padding-block: var(--s-7) var(--s-8); }
+  .dev-sources__title { font-size: var(--step-2); margin: var(--s-2) 0 var(--s-3); }
+  .dev-sources__note { color: var(--ink-muted); font-size: 0.9375rem; line-height: 1.6; }
+  .source-list { margin: var(--s-5) 0 0; padding-left: 1.25rem; font-size: 0.875rem; }
+  .source-list li { margin-bottom: var(--s-3); line-height: 1.5; }
+  .source-list__meta { color: var(--ink-muted); }
+  .dev-sources__foot {
+    margin-top: var(--s-6);
+    padding-top: var(--s-4);
+    border-top: 1px solid var(--hairline);
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+  }
+
+  @media (max-width: 720px) {
+    .score-cats { grid-template-columns: 1fr; }
+  }
+
+  @media print {
+    .item { break-inside: avoid; }
+    .evidence__quote { font-size: 0.875rem; }
+  }
+</style>

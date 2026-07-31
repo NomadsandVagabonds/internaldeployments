@@ -1,0 +1,60 @@
+---
+import type { Verdict } from '@/data/scorecard';
+import { VERDICT_LABEL } from '@/lib/score';
+
+interface Props {
+  verdict: Verdict;
+  /** Compact form for grid cells; full form carries the word. */
+  compact?: boolean;
+  priority?: boolean;
+}
+
+const { verdict, compact = false, priority = false } = Astro.props;
+
+// Four filled quarters at "meets", down to an open ring at "none". The mark
+// encodes the verdict by fill as well as by colour, so it survives greyscale
+// printing and colour-blind readers — this page gets printed.
+const GLYPH: Record<Verdict, string> = {
+  meets: '●',
+  partial: '◕',
+  adjacent: '◔',
+  none: '○',
+  unassessed: '–',
+};
+---
+
+<span
+  class:list={['vm', `vm--${verdict}`, { 'vm--compact': compact, 'vm--priority': priority }]}
+  title={VERDICT_LABEL[verdict]}
+>
+  <span class="vm__glyph" aria-hidden="true">{GLYPH[verdict]}</span>
+  {compact ? <span class="sr-only">{VERDICT_LABEL[verdict]}</span> : <span class="vm__label">{VERDICT_LABEL[verdict]}</span>}
+</span>
+
+<style>
+  .vm {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--s-2);
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+  .vm__glyph {
+    font-size: 0.9375rem;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+  .vm--meets .vm__glyph { color: var(--accent); }
+  .vm--partial .vm__glyph { color: var(--accent); opacity: 0.75; }
+  .vm--adjacent .vm__glyph { color: var(--ink-muted); }
+  .vm--none .vm__glyph { color: var(--ink-faint); }
+  .vm--unassessed .vm__glyph { color: var(--ink-faint); }
+
+  .vm--meets .vm__label { color: var(--ink); }
+  .vm__label { color: var(--ink-muted); }
+  .vm--none .vm__label,
+  .vm--unassessed .vm__label { color: var(--ink-faint); }
+
+  .vm--compact { gap: 0; }
+</style>

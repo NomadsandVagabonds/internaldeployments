@@ -1,0 +1,366 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import VerdictMark from '@/components/VerdictMark.astro';
+import { categories } from '@/data/framework';
+import { developers, RETRIEVED } from '@/data/scorecard';
+import { lastUpdated } from '@/data/site';
+import { MAX_POINTS, PRIORITY_WEIGHT, VERDICT_POINTS, allItems } from '@/lib/score';
+
+const priorityItems = allItems.filter((i) => i.priority);
+
+const scale = [
+  {
+    verdict: 'meets' as const,
+    points: VERDICT_POINTS.meets,
+    meaning:
+      'Publicly answers the question for internally deployed models, with specifics — figures, named systems, or a stated policy.',
+  },
+  {
+    verdict: 'partial' as const,
+    points: VERDICT_POINTS.partial,
+    meaning:
+      'Addressed publicly, but not specific to internal deployments, or lacking the specificity the question asks for.',
+  },
+  {
+    verdict: 'adjacent' as const,
+    points: VERDICT_POINTS.adjacent,
+    meaning:
+      'Touched obliquely, or the disclosure covers externally released models only.',
+  },
+  {
+    verdict: 'none' as const,
+    points: VERDICT_POINTS.none,
+    meaning: 'No public statement addressing the question was found.',
+  },
+  {
+    verdict: 'unassessed' as const,
+    points: null,
+    meaning:
+      'Could not verify either way. Excluded from the denominator entirely, so it neither helps nor harms a score.',
+  },
+];
+
+const changelog = [
+  {
+    date: lastUpdated,
+    entry:
+      'First publication. Six developers assessed against all fifteen disclosure questions, sources retrieved 31 July 2026.',
+  },
+];
+---
+
+<BaseLayout
+  title="Scorecard methodology"
+  description="How the developer scorecard assigns grades: the rubric, the weighting, the sources policy, and how to contest a grade."
+>
+  <article class="mth">
+    <header class="mth-hero">
+      <div class="shell shell--prose">
+        <p class="eyebrow">
+          <a href="/scorecard">Scorecard</a> · Methodology
+        </p>
+        <h1 class="mth-hero__title">How these grades are assigned</h1>
+        <p class="lede">
+          The scorecard applies Table 1 of the paper as a rubric. Fifteen questions, six developers,
+          one verdict per pair, every verdict tied to a document anyone can open.
+        </p>
+      </div>
+    </header>
+
+    <hr class="rule rule-strong" />
+
+    <div class="shell shell--prose mth-body">
+      <section class="mth-sec" id="what-this-measures">
+        <h2>What this measures — and what it does not</h2>
+        <p>
+          This scorecard measures <strong>public disclosure about internally deployed models</strong>.
+          It does not measure safety, and it should not be read as measuring safety.
+        </p>
+        <p>
+          A developer scores well here by publishing a lot about how its internal models are used,
+          monitored and governed. It is entirely possible for a developer with excellent internal
+          practices to score poorly because it publishes little, and for a developer with weaker
+          practices to score well because it publishes candidly. Anthropic's leading score, for
+          instance, rests substantially on a document that discloses vulnerabilities in its own
+          monitoring pipeline — candour that lowers a naive safety reading while raising a
+          disclosure score. That is the intended behaviour of this instrument.
+        </p>
+        <p>
+          The reason to measure disclosure separately is the argument the paper makes: internal
+          deployments are the least externally observable systems in the industry, so the question
+          of what developers say about them is prior to any question of how they behave.
+        </p>
+      </section>
+
+      <section class="mth-sec" id="rubric">
+        <h2>The rubric</h2>
+        <p>
+          Each of the fifteen disclosure questions is scored per developer on a four-point scale.
+        </p>
+        <table class="scale-table">
+          <thead>
+            <tr>
+              <th scope="col">Verdict</th>
+              <th scope="col">Points</th>
+              <th scope="col">Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            {scale.map((s) => (
+              <tr>
+                <th scope="row"><VerdictMark verdict={s.verdict} /></th>
+                <td class="mono">{s.points === null ? '—' : `${s.points} / ${MAX_POINTS}`}</td>
+                <td>{s.meaning}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section class="mth-sec" id="weighting">
+        <h2>Weighting</h2>
+        <p>
+          The paper singles out four disclosures in §4 as offering significant benefit at minimal
+          burden and risk to developers. Those four carry <strong>double weight</strong>. They fall
+          one per category, which is why the weighting does not tilt the categories against each
+          other:
+        </p>
+        <ul class="prio-list">
+          {priorityItems.map((item) => {
+            const cat = categories.find((c) => c.disclosures.some((d) => d.slug === item.slug))!;
+            return (
+              <li>
+                <span class="prio-list__cat">{cat.name}</span>
+                <a href={`/framework#${item.slug}`}>{item.question}</a>
+              </li>
+            );
+          })}
+        </ul>
+
+        <p>
+          A category score is the points earned divided by the points available in that category,
+          with priority items counted ×{PRIORITY_WEIGHT}.
+        </p>
+
+        <p>
+          The <strong>overall score is the unweighted mean of the four category scores.</strong>
+          This is a deliberate departure from scorecards such as AI Lab Watch, which weight their
+          categories by judged importance. The paper ranks disclosures <em>within</em> its priority
+          set but never ranks capabilities, usage, safety mitigations and governance against one
+          another. Inventing a cross-category weighting would attribute to the framework a claim it
+          does not make, so each category counts once. Where every item in a category is
+          unassessed, that category drops out of the mean rather than counting as zero.
+        </p>
+      </section>
+
+      <section class="mth-sec" id="sources">
+        <h2>Sources policy</h2>
+        <ul class="rules">
+          <li>
+            Every verdict other than <em>Not assessed</em> cites at least one retrievable primary
+            source. This is enforced when the site is built — a cell carrying a verdict with no
+            evidence fails the build rather than shipping.
+          </li>
+          <li>
+            Sources are documents published by the developer being graded, or clearly labelled
+            third-party assessments. Third-party sources are marked
+            <span class="tp-demo">third party</span> wherever they appear, and where a third party
+            is the only source for a verdict the rationale says so.
+          </li>
+          <li>
+            Verbatim quotes are used wherever a source says something specific. Rationales
+            paraphrase; quotes do not.
+          </li>
+          <li>
+            Where we could not verify a claim either way, the verdict is <em>Not assessed</em> and
+            the cell is excluded from scoring. We do not guess, and we do not treat an unsuccessful
+            search as evidence of absence unless the search was thorough enough to say so — in which
+            case the verdict is <em>None</em> and the rationale explains the basis.
+          </li>
+          <li>
+            Assessments cover public material only. Developers disclose considerably more to
+            regulators and to evaluators under NDA than they publish, and the paper endorses that
+            two-channel model. A low score here is a statement about the public channel.
+          </li>
+        </ul>
+      </section>
+
+      <section class="mth-sec" id="limits">
+        <h2>Known limits</h2>
+        <ul class="rules">
+          <li>
+            <strong>Recency.</strong> Sources were retrieved on {RETRIEVED}. This field moves fast;
+            anything published afterwards is not reflected until the next review.
+          </li>
+          <li>
+            <strong>Search is imperfect.</strong> A <em>None</em> verdict means we did not find a
+            public statement, not that none exists. This is the failure mode most likely to be
+            unfair to a developer, and the one the corrections process below exists to fix.
+          </li>
+          <li>
+            <strong>Judgment calls.</strong> The boundary between <em>Partial</em> and
+            <em>Adjacent</em> in particular is a judgment. We publish the rationale for every cell
+            so that readers can disagree with a specific verdict rather than the aggregate.
+          </li>
+          <li>
+            <strong>Aggregate scores compress.</strong> The percentages are a navigation aid. The
+            rationales and quotes are the actual content of this scorecard, and a reader who cares
+            about a particular developer should read the cells rather than the header figure.
+          </li>
+        </ul>
+      </section>
+
+      <section class="mth-sec" id="corrections">
+        <h2>Corrections</h2>
+        <p>
+          If a verdict on this scorecard is wrong, we want to fix it, and we would rather fix it
+          quickly than defend it.
+        </p>
+        <p>
+          The most likely error is a missed source: a developer has published something that
+          answers a question and we did not find it. To correct a grade, send the document — a URL
+          and, if you can, the passage that answers the question. Where a source turns out to
+          support a higher verdict, the cell is updated and the change is recorded in the changelog
+          below with the date and what changed. Corrections from a developer's own staff are
+          welcome and are treated exactly like any other source: we assess the document, not the
+          sender.
+        </p>
+        <p class="contact">
+          <span class="eyebrow">Contact</span>
+          <span class="contact__placeholder mono">
+            [correction channel to be added before public launch]
+          </span>
+        </p>
+        <p class="contact-note">
+          Until that address is live, corrections can be raised as issues on the site's public
+          repository.
+        </p>
+      </section>
+
+      <section class="mth-sec" id="changelog">
+        <h2>Changelog</h2>
+        <dl class="changelog">
+          {changelog.map((c) => (
+            <div class="changelog__row">
+              <dt class="mono">{c.date}</dt>
+              <dd>{c.entry}</dd>
+            </div>
+          ))}
+        </dl>
+        <p class="mth-foot">
+          {developers.length} developers · {allItems.length} disclosure questions ·
+          {developers.length * allItems.length} assessed pairs. Reviewed {lastUpdated}.
+        </p>
+      </section>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .mth-hero { padding-block: var(--s-8) var(--s-6); }
+  .mth-hero__title {
+    font-size: var(--step-4);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--s-5);
+  }
+  .mth-body { padding-block: var(--s-7) var(--s-9); }
+
+  .mth-sec { margin-bottom: var(--s-9); }
+  .mth-sec h2 {
+    font-size: var(--step-2);
+    padding-bottom: var(--s-3);
+    border-bottom: 1px solid var(--hairline-strong);
+    margin-bottom: var(--s-5);
+  }
+  .mth-sec p { line-height: 1.65; }
+
+  .scale-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    margin-top: var(--s-4);
+  }
+  .scale-table th, .scale-table td {
+    text-align: left;
+    padding: var(--s-3) var(--s-4) var(--s-3) 0;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: baseline;
+  }
+  .scale-table thead th {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    border-bottom-color: var(--hairline-strong);
+  }
+  .scale-table tbody th { font-weight: 400; white-space: nowrap; }
+  .scale-table td:last-child { color: var(--ink-muted); line-height: 1.5; }
+
+  .prio-list { list-style: none; padding: 0; margin: var(--s-4) 0; }
+  .prio-list li {
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--hairline);
+    display: grid;
+    grid-template-columns: 10rem 1fr;
+    gap: var(--s-4);
+    align-items: baseline;
+    font-size: 0.9375rem;
+  }
+  .prio-list__cat {
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--citation);
+  }
+
+  .rules { padding-left: 1.125rem; }
+  .rules li { margin-bottom: var(--s-4); line-height: 1.6; }
+
+  .tp-demo {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--citation);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-sm);
+    padding: 0 0.35em;
+  }
+
+  .contact {
+    margin-top: var(--s-5);
+    padding: var(--s-4) 0;
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .contact__placeholder { color: var(--citation); font-size: 0.875rem; }
+  .contact-note { font-size: 0.875rem; color: var(--ink-muted); margin-top: var(--s-3); }
+
+  .changelog { margin: var(--s-4) 0 0; }
+  .changelog__row {
+    display: grid;
+    grid-template-columns: 10rem 1fr;
+    gap: var(--s-4);
+    padding: var(--s-4) 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 0.875rem;
+  }
+  .changelog__row dt { color: var(--ink-muted); }
+  .changelog__row dd { margin: 0; line-height: 1.55; }
+
+  .mth-foot {
+    margin-top: var(--s-6);
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+  }
+
+  @media (max-width: 720px) {
+    .prio-list li, .changelog__row { grid-template-columns: 1fr; gap: var(--s-2); }
+  }
+</style>
