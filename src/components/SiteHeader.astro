@@ -3,8 +3,9 @@ import ThemeToggle from './ThemeToggle.astro';
 
 const links = [
   { href: '/framework', label: 'Framework' },
+  { href: '/scorecard', label: 'Scorecard' },
   { href: '/tracker', label: 'Tracker' },
-  { href: '/checklist', label: 'Checklist' },
+  { href: '/checklist', label: 'Templates' },
   { href: '/resources', label: 'Resources' },
 ];
 
@@ -13,9 +14,9 @@ const pathname = Astro.url.pathname.replace(/\/$/, '') || '/';
 
 <header class="site-header no-print">
   <div class="shell shell--table site-header__inner">
-    <a href="/" class="site-header__brand" aria-label="IDM Disclosure home">
+    <a href="/" class="site-header__brand" aria-label="Internal Deployments home">
       <span class="brand-mark" aria-hidden="true">§</span>
-      <span class="brand-name">IDM Disclosure</span>
+      <span class="brand-name">Internal Deployments</span>
     </a>
 
     <nav class="site-nav" aria-label="Primary">

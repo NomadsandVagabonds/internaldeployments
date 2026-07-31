@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
+import { paper, lastUpdated, arxivLabel, versionDateLong } from '@/data/site';
 
 const sections = [
   {
@@ -12,6 +13,14 @@ const sections = [
   },
   {
     eyebrow: 'Section 02',
+    title: 'Developer scorecard',
+    href: '/scorecard',
+    summary:
+      'Six frontier developers graded against all fifteen disclosure questions, on the evidence of what they publish. Every verdict cites a primary source. Most cells are empty — that is the finding.',
+    cta: 'See the scorecard',
+  },
+  {
+    eyebrow: 'Section 03',
     title: 'Legislation tracker',
     href: '/tracker',
     summary:
@@ -19,7 +28,7 @@ const sections = [
     cta: 'Open the tracker',
   },
   {
-    eyebrow: 'Section 03',
+    eyebrow: 'Section 04',
     title: 'Disclosure templates',
     href: '/checklist',
     summary:
@@ -27,7 +36,7 @@ const sections = [
     cta: 'See the templates',
   },
   {
-    eyebrow: 'Section 04',
+    eyebrow: 'Section 05',
     title: 'Resources',
     href: '/resources',
     summary:
@@ -35,12 +44,6 @@ const sections = [
     cta: 'Browse resources',
   },
 ];
-
-const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
 ---
 
 <BaseLayout
@@ -49,7 +52,7 @@ const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
 >
   <section class="hero">
     <div class="shell shell--table hero__inner">
-      <p class="eyebrow">arXiv:2604.23065 · April 2026</p>
+      <p class="eyebrow">{arxivLabel} · {versionDateLong} · {paper.venueShort}</p>
       <h1 class="hero__title">
         What should frontier AI developers
         <span class="hero__title-em">disclose</span> about
@@ -58,24 +61,19 @@ const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
       <p class="lede">
         Frontier labs increasingly deploy their most capable models inside their own walls — to
         automate AI&nbsp;R&amp;D, run evaluations, write training data, and operate core
-        infrastructure. This paper proposes a four-category disclosure framework and assesses
-        the laws and bills that already touch this surface.
+        infrastructure. These are the least visible deployments in the industry. This site
+        renders the paper's four-category disclosure framework as a working reference, grades
+        six developers on what they actually publish, and tracks the law as it catches up.
       </p>
-
-      <ul class="hero__authors" aria-label="Authors">
-        <li>Jacob Charnock</li>
-        <li>Raja Mehta Moreno</li>
-        <li>Justin Miller</li>
-        <li>William&nbsp;L. Anderson</li>
-      </ul>
 
       <div class="hero__actions">
         <a href="/framework" class="btn btn--primary">Read the framework</a>
-        <a href="https://arxiv.org/abs/2604.23065" class="btn btn--ghost">
+        <a href="/scorecard" class="btn btn--ghost">See the scorecard</a>
+        <a href={paper.abstractUrl} class="btn btn--ghost">
           arXiv abstract
           <span aria-hidden="true">↗</span>
         </a>
-        <a href="/paper.pdf" class="btn btn--ghost">PDF</a>
+        <a href={paper.pdfUrl} class="btn btn--ghost">PDF</a>
       </div>
     </div>
   </section>
@@ -112,22 +110,26 @@ const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
       <p class="eyebrow">Abstract</p>
       <div class="abstract__body">
         <p>
-          As frontier model capability outpaces the public's ability to observe what those
-          models are doing, the most consequential AI deployments are increasingly invisible —
-          they happen inside the developer. We propose four categories of disclosure that
-          together describe an internal deployment well enough for a regulator, auditor, or
-          informed reader to assess its risk: <strong>capabilities</strong> the model has,
-          <strong>usage</strong> it is being put to, <strong>safety mitigations</strong> applied,
-          and <strong>governance</strong> arrangements around it. We then grade fourteen current
-          laws, bills, and voluntary frameworks against this rubric, surface where the
-          disclosure regime is weakest, and offer template language for both public and
-          confidential reports.
+          Frontier AI developers are increasingly deploying highly capable models internally to
+          automate AI R&amp;D, but these deployments currently face limited external oversight.
+          It is essential, therefore, that developers provide evidence that internally deployed
+          models are safe. While recent work has highlighted the risks of internal deployments
+          and proposed broad approaches to transparency and governance, there remains little
+          guidance on the specific information developers should disclose about them. We address
+          this gap by identifying key information that developers should disclose about
+          internally deployed models across four categories: <strong>capabilities</strong>,
+          <strong>usage</strong>, <strong>safety mitigations</strong>, and
+          <strong>governance</strong>. For each category, we analyse the key benefits and risks
+          of disclosure and consider how disclosure-related risks can be mitigated. Our
+          framework could be used by developers to inform both public transparency documents,
+          such as model system cards, and private periodic reports required under emerging
+          frontier AI regulation such as SB 53, NY RAISE, and the EU GPAI Code of Practice.
         </p>
       </div>
       <aside class="abstract__meta mono">
         <p><span class="caps muted">Updated</span><br/>{lastUpdated}</p>
-        <p><span class="caps muted">Length</span><br/>~24 pages</p>
-        <p><span class="caps muted">Status</span><br/>preprint</p>
+        <p><span class="caps muted">Length</span><br/>{paper.pages} pages</p>
+        <p><span class="caps muted">Status</span><br/>{paper.status}</p>
       </aside>
     </div>
   </section>
@@ -158,28 +160,8 @@ const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
     max-width: 40rem;
     color: var(--ink);
   }
-  .hero__authors {
-    list-style: none;
-    margin: var(--s-6) 0 var(--s-6);
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s-4) var(--s-5);
-    font-family: var(--font-body);
-    font-size: 0.9375rem;
-    color: var(--ink-muted);
-  }
-  .hero__authors li {
-    margin: 0;
-    position: relative;
-  }
-  .hero__authors li:not(:last-child)::after {
-    content: '·';
-    position: absolute;
-    right: calc(-1 * var(--s-3));
-    color: var(--ink-faint);
-  }
   .hero__actions {
+    margin-top: var(--s-6);
     display: flex;
     flex-wrap: wrap;
     gap: var(--s-3);
@@ -293,6 +275,12 @@ const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
     grid-template-columns: 1fr 12rem;
     gap: var(--s-7);
     align-items: start;
+  }
+  /* The eyebrow is a grid child; without this it consumes the first cell and
+     pushes the body copy into the 12rem meta column. */
+  .abstract__inner > .eyebrow {
+    grid-column: 1 / -1;
+    margin-bottom: calc(-1 * var(--s-4));
   }
   .abstract__body p {
     font-size: 1.0625rem;

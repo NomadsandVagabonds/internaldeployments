@@ -2,9 +2,12 @@
  * The four-category disclosure framework — extracted from
  * Charnock, Mehta Moreno, Miller & Anderson (2026), Table 1 + §3.
  *
- * Source: 2604.23065v1.pdf (April 2026 preprint).
+ * Source: arXiv:2604.23065v2 (1 July 2026), Table 1 and §3.
  * Status: extracted verbatim where possible, lightly compressed for layout.
  *         Marked DRAFT until co-author proofing.
+ *
+ * Item slugs are the join key for the scorecard (src/data/scorecard.ts) and are
+ * permalink targets — do not rename them without updating both.
  */
 
 export type DisclosureItem = {
@@ -16,6 +19,12 @@ export type DisclosureItem = {
   examples: string;
   /** Whether this disclosure is appropriate for public reports vs. confidential only */
   scope: 'public' | 'confidential' | 'both';
+  /**
+   * The four disclosures the paper singles out in §4 ("What information is most
+   * important to report?") as offering significant benefit at minimal burden and
+   * risk. Exactly one per category. Carries double weight in the scorecard.
+   */
+  priority?: boolean;
 };
 
 export type Category = {
@@ -94,8 +103,9 @@ export const categories: Category[] = [
         slug: 'capability-divergence',
         question:
           "Broadly, how do IDMs' capabilities diverge from public-facing models in relevant domains?",
-        examples: 'i.e., step changes in key domains such as cyber-offense',
+        examples: 'i.e., step changes in key domains such as cyber-offence',
         scope: 'public',
+        priority: true,
       },
     ],
   },
@@ -138,9 +148,10 @@ export const categories: Category[] = [
       {
         slug: 'pipeline-review',
         question:
-          'What proportion of changes to your frontier model training pipeline(s) is reviewed by a human expert?',
+          'What proportion of changes to your frontier model training pipeline(s) is reviewed by a human expert, and what reviewing methods are used?',
         examples: '',
         scope: 'both',
+        priority: true,
       },
     ],
   },
@@ -175,6 +186,7 @@ export const categories: Category[] = [
         examples:
           'e.g., output monitoring systems, control mechanisms, human-in-the-loop requirements, interaction logging, and specific monitoring techniques such as probes or classifiers',
         scope: 'both',
+        priority: true,
       },
       {
         slug: 'stress-testing',
@@ -239,6 +251,7 @@ export const categories: Category[] = [
           'What concerning model behaviours do you monitor and what are your planned responses to observing concerning behaviour?',
         examples: '',
         scope: 'public',
+        priority: true,
       },
       {
         slug: 'review-cadence',

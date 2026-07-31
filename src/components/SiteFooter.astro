@@ -1,9 +1,5 @@
 ---
-const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+import { paper, lastUpdated, arxivLabel } from '@/data/site';
 ---
 
 <footer class="site-footer no-print">
@@ -13,21 +9,25 @@ const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
       <p class="eyebrow">Citation</p>
       <p class="cite">
         Charnock, J., Mehta Moreno, R., Miller, J., &amp; Anderson, W.&nbsp;L. (2026).
-        <em>What Should Frontier AI Developers Disclose About Internal Deployments?</em>
-        arXiv:2604.23065.
+        <em>{paper.title}</em> {paper.venue}. {arxivLabel}.
       </p>
       <p class="cite-links">
-        <a href="https://arxiv.org/abs/2604.23065">arXiv abstract</a>
+        <a href={paper.abstractUrl}>arXiv abstract</a>
         <span aria-hidden="true">·</span>
-        <a href="/paper.pdf">PDF</a>
+        <a href={paper.pdfUrl}>PDF</a>
+        <span aria-hidden="true">·</span>
+        <a href="/resources#cite">BibTeX</a>
       </p>
     </div>
 
     <div class="site-footer__col">
       <p class="eyebrow">About this site</p>
       <p class="about">
-        An independent reference resource for the paper. Tracker is editorial assessment, not
-        legal advice. Refreshed quarterly to align with SB&nbsp;53 OES reporting cycles.
+        An independent reference resource for the paper. The scorecard and tracker are
+        editorial assessments of published material, not legal advice and not audits.
+        Corrections are welcome — see the
+        <a href="/scorecard/methodology#corrections">corrections policy</a>. Refreshed
+        quarterly to align with SB&nbsp;53 OES reporting cycles.
       </p>
     </div>
 

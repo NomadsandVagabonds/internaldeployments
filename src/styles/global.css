@@ -235,10 +235,11 @@ hr {
   border-top: 1px solid var(--hairline-strong);
 }
 
-/* skip link for keyboard nav */
+/* skip link for keyboard nav — fixed, not absolute, so it hides against the
+   viewport rather than painting at the top of the document flow */
 .skip-link {
-  position: absolute;
-  top: -40px;
+  position: fixed;
+  top: var(--s-4);
   left: var(--s-4);
   background: var(--ink);
   color: var(--paper);
@@ -247,10 +248,12 @@ hr {
   z-index: 100;
   border: 0;
   text-decoration: none;
+  transform: translateY(calc(-100% - var(--s-5)));
+  transition: transform var(--d-fast) var(--ease-out);
 }
 
 .skip-link:focus {
-  top: var(--s-4);
+  transform: translateY(0);
 }
 
 /* print --------------------------------------------------------------- */
