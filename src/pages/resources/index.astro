@@ -3,12 +3,30 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import {
   primaryTexts,
   systemCards,
+  developerSources,
   literature,
   externalAuditors,
 } from '@/data/resources';
+import { paper, arxivLabel } from '@/data/site';
 
 const totalResources =
-  primaryTexts.length + systemCards.length + literature.length + externalAuditors.length;
+  primaryTexts.length +
+  systemCards.length +
+  developerSources.length +
+  literature.length +
+  externalAuditors.length;
+
+const bibtex = `@inproceedings{charnock2026idm,
+  title     = {${paper.title}},
+  author    = {Charnock, Jacob and Mehta Moreno, Raja and Miller, Justin
+               and Anderson, William L.},
+  booktitle = {${paper.venue}},
+  year      = {2026},
+  eprint    = {${paper.arxivId}},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CY},
+  url       = {${paper.abstractUrl}}
+}`;
 ---
 
 <BaseLayout
@@ -19,11 +37,12 @@ const totalResources =
     <!-- ===== Hero ===== -->
     <header class="rs-hero">
       <div class="shell shell--prose">
-        <p class="eyebrow">Section 04 · Resources</p>
+        <p class="eyebrow">Section 05 · Resources</p>
         <h1 class="rs-hero__title">The reading list behind the framework</h1>
         <p class="lede">
-          {totalResources} primary texts and references that informed the paper, organised by
-          how they relate to internal-deployment disclosure.
+          {totalResources} primary texts and references, organised by how they relate to
+          internal-deployment disclosure — the paper's bibliography, the legal instruments,
+          and the developer documents the <a href="/scorecard">scorecard</a> grades.
         </p>
       </div>
     </header>
@@ -91,11 +110,46 @@ const totalResources =
       </div>
     </section>
 
+    <!-- ===== Section: developer sources graded by the scorecard ===== -->
+    <section class="rs-section" id="developer-sources">
+      <div class="shell shell--table">
+        <header class="rs-section__head">
+          <p class="eyebrow">C · The scorecard's evidence base</p>
+          <h2>Developer documents that address internal deployment</h2>
+          <p class="muted rs-section__sub">
+            Every document cited by the <a href="/scorecard">scorecard</a>, in one place. These
+            are the sources in which a developer either answers one of the framework's fifteen
+            questions or does not.
+          </p>
+        </header>
+        <ul class="rs-list">
+          {developerSources.map((r) => (
+            <li class="rs-card">
+              <p class="rs-card__meta caps muted">
+                {r.publisher}{r.year && <> · {r.year}</>}
+              </p>
+              <h3 class="rs-card__title">
+                {r.url ? (
+                  <a href={r.url} target="_blank" rel="noopener noreferrer">
+                    {r.title}
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                ) : (
+                  r.title
+                )}
+              </h3>
+              <p class="rs-card__note">{r.note}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
     <!-- ===== Section: literature ===== -->
     <section class="rs-section" id="literature">
       <div class="shell shell--table">
         <header class="rs-section__head">
-          <p class="eyebrow">C · Related literature</p>
+          <p class="eyebrow">D · Related literature</p>
           <h2>Works that informed the framework</h2>
           <p class="muted rs-section__sub">
             The research and policy literature on internal deployment, AI R&amp;D automation,
@@ -111,7 +165,11 @@ const totalResources =
                 <span class="rs-bib__year mono">{r.year}</span>
               </div>
               <p class="rs-bib__title">
-                <a href={r.url} target="_blank" rel="noopener noreferrer">{r.title}</a>
+                {r.url ? (
+                  <a href={r.url} target="_blank" rel="noopener noreferrer">{r.title}</a>
+                ) : (
+                  r.title
+                )}
               </p>
               <p class="rs-bib__pub muted">
                 {r.publisher}
@@ -127,7 +185,7 @@ const totalResources =
     <section class="rs-section" id="auditors">
       <div class="shell shell--table">
         <header class="rs-section__head">
-          <p class="eyebrow">D · External evaluators</p>
+          <p class="eyebrow">E · External evaluators</p>
           <h2>Third parties for confidential channels</h2>
           <p class="muted rs-section__sub">
             Organisations that already receive sensitive information about internal deployments
@@ -149,6 +207,39 @@ const totalResources =
             </li>
           ))}
         </ul>
+      </div>
+    </section>
+
+    <!-- ===== Section: citing ===== -->
+    <section class="rs-section" id="cite">
+      <div class="shell shell--table">
+        <header class="rs-section__head">
+          <p class="eyebrow">F · Citing this work</p>
+          <h2>Citation and bibliography</h2>
+          <p class="muted rs-section__sub">
+            Cite the paper, not this site. The full bibliography is available as BibTeX for
+            anyone building on the framework.
+          </p>
+        </header>
+
+        <div class="cite-block">
+          <p class="cite-block__plain">
+            Charnock, J., Mehta Moreno, R., Miller, J., &amp; Anderson, W.&nbsp;L. (2026).
+            <em>{paper.title}</em> {paper.venue}. {arxivLabel}.
+          </p>
+
+          <pre class="cite-block__bibtex mono"><code>{bibtex}</code></pre>
+
+          <p class="cite-block__links">
+            <a href="/internaldeployments.bib" download>
+              Full bibliography (.bib) <span aria-hidden="true">↓</span>
+            </a>
+            <span aria-hidden="true">·</span>
+            <a href={paper.abstractUrl}>arXiv abstract <span aria-hidden="true">↗</span></a>
+            <span aria-hidden="true">·</span>
+            <a href={paper.pdfUrl}>Paper PDF</a>
+          </p>
+        </div>
       </div>
     </section>
 
@@ -357,4 +448,32 @@ const totalResources =
   .btn--primary:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); }
   .btn--ghost { color: var(--ink-muted); border: 1px solid var(--hairline-strong); }
   .btn--ghost:hover { color: var(--ink); border-color: var(--ink-muted); }
+
+  /* ===== Citation block ==================================== */
+  .cite-block { max-width: 46rem; }
+  .cite-block__plain {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin-bottom: var(--s-5);
+  }
+  .cite-block__bibtex {
+    margin: 0;
+    padding: var(--s-5);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-sm);
+    background: var(--accent-soft);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--ink);
+  }
+  .cite-block__links {
+    margin-top: var(--s-4);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    align-items: center;
+    font-size: 0.875rem;
+  }
 </style>
