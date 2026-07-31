@@ -1,0 +1,336 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+
+const sections = [
+  {
+    eyebrow: 'Section 01',
+    title: 'Disclosure framework',
+    href: '/framework',
+    summary:
+      'Table 1 of the paper, rendered for use. Four categories — capabilities, usage, safety mitigations, governance — with the underlying benefit/risk analysis and a public-vs-confidential view for each item.',
+    cta: 'Read the framework',
+  },
+  {
+    eyebrow: 'Section 02',
+    title: 'Legislation tracker',
+    href: '/tracker',
+    summary:
+      'A maintained map of laws, bills, and quasi-regulatory regimes that touch internal deployments. Every row links to primary text. Filter by jurisdiction, status, and IDM grade.',
+    cta: 'Open the tracker',
+  },
+  {
+    eyebrow: 'Section 03',
+    title: 'Disclosure templates',
+    href: '/checklist',
+    summary:
+      'Two fillable templates derived from the framework — one for public reports, one for confidential regulator submissions. Includes worked examples showing what good looks like.',
+    cta: 'See the templates',
+  },
+  {
+    eyebrow: 'Section 04',
+    title: 'Resources',
+    href: '/resources',
+    summary:
+      'Primary legal texts, the related literature, and a contact channel for corrections, additions, and citations.',
+    cta: 'Browse resources',
+  },
+];
+
+const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout
+  title="IDM Disclosure"
+  description="What should frontier AI developers disclose about internal deployments? A reference site for the paper, a legislation tracker, and disclosure templates."
+>
+  <section class="hero">
+    <div class="shell shell--table hero__inner">
+      <p class="eyebrow">arXiv:2604.23065 · April 2026</p>
+      <h1 class="hero__title">
+        What should frontier AI developers
+        <span class="hero__title-em">disclose</span> about
+        internal deployments?
+      </h1>
+      <p class="lede">
+        Frontier labs increasingly deploy their most capable models inside their own walls — to
+        automate AI&nbsp;R&amp;D, run evaluations, write training data, and operate core
+        infrastructure. This paper proposes a four-category disclosure framework and assesses
+        the laws and bills that already touch this surface.
+      </p>
+
+      <ul class="hero__authors" aria-label="Authors">
+        <li>Jacob Charnock</li>
+        <li>Raja Mehta Moreno</li>
+        <li>Justin Miller</li>
+        <li>William&nbsp;L. Anderson</li>
+      </ul>
+
+      <div class="hero__actions">
+        <a href="/framework" class="btn btn--primary">Read the framework</a>
+        <a href="https://arxiv.org/abs/2604.23065" class="btn btn--ghost">
+          arXiv abstract
+          <span aria-hidden="true">↗</span>
+        </a>
+        <a href="/paper.pdf" class="btn btn--ghost">PDF</a>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <section class="contents">
+    <div class="shell shell--table">
+      <p class="eyebrow">Contents</p>
+      <ol class="toc">
+        {sections.map((s) => (
+          <li class="toc__item">
+            <a href={s.href} class="toc__link">
+              <span class="toc__num mono">{s.eyebrow.replace('Section ', '')}</span>
+              <div class="toc__body">
+                <h2 class="toc__title">{s.title}</h2>
+                <p class="toc__summary">{s.summary}</p>
+                <span class="toc__cta">
+                  {s.cta}
+                  <span aria-hidden="true">→</span>
+                </span>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <hr class="rule" />
+
+  <section class="abstract">
+    <div class="shell shell--table abstract__inner">
+      <p class="eyebrow">Abstract</p>
+      <div class="abstract__body">
+        <p>
+          As frontier model capability outpaces the public's ability to observe what those
+          models are doing, the most consequential AI deployments are increasingly invisible —
+          they happen inside the developer. We propose four categories of disclosure that
+          together describe an internal deployment well enough for a regulator, auditor, or
+          informed reader to assess its risk: <strong>capabilities</strong> the model has,
+          <strong>usage</strong> it is being put to, <strong>safety mitigations</strong> applied,
+          and <strong>governance</strong> arrangements around it. We then grade fourteen current
+          laws, bills, and voluntary frameworks against this rubric, surface where the
+          disclosure regime is weakest, and offer template language for both public and
+          confidential reports.
+        </p>
+      </div>
+      <aside class="abstract__meta mono">
+        <p><span class="caps muted">Updated</span><br/>{lastUpdated}</p>
+        <p><span class="caps muted">Length</span><br/>~24 pages</p>
+        <p><span class="caps muted">Status</span><br/>preprint</p>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: var(--s-9) var(--s-7);
+  }
+  .hero__inner {
+    max-width: 64rem;
+  }
+  .hero__title {
+    font-size: var(--step-5);
+    font-weight: 400;
+    letter-spacing: -0.038em;
+    line-height: 1;
+    margin: 0 0 var(--s-6);
+    text-wrap: balance;
+    max-width: 22ch;
+  }
+  .hero__title-em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 400;
+  }
+  .hero .lede {
+    max-width: 40rem;
+    color: var(--ink);
+  }
+  .hero__authors {
+    list-style: none;
+    margin: var(--s-6) 0 var(--s-6);
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-4) var(--s-5);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+  }
+  .hero__authors li {
+    margin: 0;
+    position: relative;
+  }
+  .hero__authors li:not(:last-child)::after {
+    content: '·';
+    position: absolute;
+    right: calc(-1 * var(--s-3));
+    color: var(--ink-faint);
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-2);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    padding: 0.625rem 1.125rem;
+    border-radius: var(--r-pill);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    border-bottom: 0;
+    transition: background-color var(--d-fast) var(--ease-out),
+      color var(--d-fast) var(--ease-out), border-color var(--d-fast) var(--ease-out);
+  }
+  .btn--primary {
+    background: var(--ink);
+    color: var(--paper);
+    border: 1px solid var(--ink);
+  }
+  .btn--primary:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--paper);
+  }
+  .btn--ghost {
+    background: transparent;
+    color: var(--ink-muted);
+    border: 1px solid var(--hairline-strong);
+  }
+  .btn--ghost:hover {
+    color: var(--ink);
+    border-color: var(--ink-muted);
+  }
+
+  /* ---- table of contents ------------------------------------------- */
+
+  .contents {
+    padding-block: var(--s-7);
+  }
+  .toc {
+    list-style: none;
+    margin: var(--s-5) 0 0;
+    padding: 0;
+    max-width: none;
+  }
+  .toc__item + .toc__item {
+    border-top: 1px solid var(--hairline);
+  }
+  .toc__link {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: var(--s-6);
+    padding-block: var(--s-6);
+    color: var(--ink);
+    border-bottom: 0;
+    transition: background-color var(--d-fast) var(--ease-out);
+  }
+  .toc__link:hover {
+    background: var(--accent-soft);
+  }
+  .toc__link:hover .toc__title {
+    color: var(--accent);
+  }
+  .toc__link:hover .toc__cta {
+    color: var(--accent);
+  }
+  .toc__num {
+    font-size: 0.8125rem;
+    color: var(--ink-faint);
+    letter-spacing: 0.06em;
+    padding-top: 0.6em;
+  }
+  .toc__body {
+    max-width: 44rem;
+  }
+  .toc__title {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    margin: 0 0 var(--s-3);
+    transition: color var(--d-fast) var(--ease-out);
+  }
+  .toc__summary {
+    color: var(--ink-muted);
+    font-size: 1rem;
+    line-height: 1.55;
+    margin: 0 0 var(--s-3);
+    max-width: 44rem;
+  }
+  .toc__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+    transition: color var(--d-fast) var(--ease-out);
+  }
+
+  /* ---- abstract ---------------------------------------------------- */
+
+  .abstract {
+    padding-block: var(--s-7) var(--s-8);
+  }
+  .abstract__inner {
+    display: grid;
+    grid-template-columns: 1fr 12rem;
+    gap: var(--s-7);
+    align-items: start;
+  }
+  .abstract__body p {
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    max-width: 38rem;
+  }
+  .abstract__meta {
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    border-left: 1px solid var(--hairline);
+    padding-left: var(--s-5);
+  }
+  .abstract__meta p {
+    margin: 0 0 var(--s-3);
+    max-width: none;
+  }
+
+  @media (max-width: 720px) {
+    .hero { padding-block: var(--s-7) var(--s-5); }
+    .toc__link {
+      grid-template-columns: 1fr;
+      gap: var(--s-2);
+      padding-block: var(--s-5);
+    }
+    .toc__num { padding-top: 0; }
+    .abstract__inner {
+      grid-template-columns: 1fr;
+    }
+    .abstract__meta {
+      border-left: 0;
+      border-top: 1px solid var(--hairline);
+      padding-left: 0;
+      padding-top: var(--s-4);
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--s-5);
+    }
+    .abstract__meta p { margin: 0; }
+  }
+</style>

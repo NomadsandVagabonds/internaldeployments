@@ -1,0 +1,705 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { tracker, gradeRubric } from '@/data/tracker';
+
+// Stable sort by score, descending — that's the default view
+const entries = [...tracker].sort((a, b) => b.score - a.score);
+
+// Stats for the editorial summary
+const total = entries.length;
+const enacted = entries.filter((e) => e.status === 'Enacted').length;
+const pending = entries.filter((e) => e.status === 'Pending').length;
+const bOrBetter = entries.filter((e) => e.score >= 70).length;
+const internalUseHooks = entries.filter((e) =>
+  e.tags.some((t) => t.toLowerCase().includes('internal')),
+).length;
+const avgScore = Math.round(entries.reduce((sum, e) => sum + e.score, 0) / entries.length);
+
+// Filter facets
+const jurisdictions = Array.from(new Set(entries.map((e) => e.jurisdiction))).sort();
+const statuses: string[] = Array.from(new Set(entries.map((e) => e.status as string)));
+const focusAreas: string[] = Array.from(new Set(entries.flatMap((e) => e.focus as string[]))).sort();
+
+const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+function gradeClass(grade: string): string {
+  return grade.replace('+', 'p').replace('-', 'm');
+}
+---
+
+<BaseLayout
+  title="Tracker"
+  description="A maintained map of laws, bills, and quasi-regulatory regimes that touch internal deployments. Every row links to primary text."
+>
+  <article class="tracker">
+    <!-- ===== Hero ===== -->
+    <header class="tk-hero">
+      <div class="shell shell--prose">
+        <p class="eyebrow">Section 02 · Tracker</p>
+        <h1 class="tk-hero__title">How current law sees internal deployments</h1>
+        <p class="lede">
+          Fourteen laws, bills, and voluntary frameworks — graded against the four-category
+          framework. Every row links to primary text.
+        </p>
+      </div>
+
+      <div class="shell shell--table tk-summary">
+        <p class="tk-summary__lead">
+          As of <strong>{lastUpdated}</strong>, <strong>{total}</strong> instruments are tracked
+          ({enacted} enacted, {pending} pending). <strong>{bOrBetter}</strong> grade B or better
+          against the framework, and <strong>{internalUseHooks}</strong> contain explicit
+          internal-use hooks. The mean IDM score across the tracker is <strong>{avgScore}/100</strong>.
+        </p>
+      </div>
+    </header>
+
+    <hr class="rule rule-strong" />
+
+    <!-- ===== Grade rubric ===== -->
+    <section class="tk-rubric">
+      <div class="shell shell--table">
+        <div class="tk-rubric__head">
+          <p class="eyebrow">Grade rubric</p>
+          <h2 class="tk-rubric__title">How instruments are scored</h2>
+          <p class="muted tk-rubric__sub">
+            Editorial assessment, not legal advice. Grades reflect how well the instrument
+            covers IDM disclosure across capabilities, usage, safety mitigations, and governance.
+          </p>
+        </div>
+        <ol class="tk-rubric__rows">
+          {gradeRubric.map((r) => (
+            <li class="tk-rubric__row">
+              <span class:list={['tk-grade', `tk-grade--${gradeClass(r.grade)}`]}>{r.grade}</span>
+              <p class="tk-rubric__desc">{r.description}</p>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <hr class="rule rule-strong" />
+
+    <!-- ===== Filter controls ===== -->
+    <section class="tk-controls" aria-label="Filter the tracker">
+      <div class="shell shell--table tk-controls__inner">
+        <label class="tk-field tk-field--search">
+          <span class="caps muted">Search</span>
+          <input
+            id="tk-search"
+            type="search"
+            placeholder="Bill name, jurisdiction, notes, tags…"
+            autocomplete="off"
+          />
+        </label>
+        <label class="tk-field">
+          <span class="caps muted">Jurisdiction</span>
+          <select id="tk-jurisdiction">
+            <option value="all">All</option>
+            {jurisdictions.map((j) => <option value={j}>{j}</option>)}
+          </select>
+        </label>
+        <label class="tk-field">
+          <span class="caps muted">Status</span>
+          <select id="tk-status">
+            <option value="all">All</option>
+            {statuses.map((s) => <option value={s}>{s}</option>)}
+          </select>
+        </label>
+        <label class="tk-field">
+          <span class="caps muted">Focus area</span>
+          <select id="tk-focus">
+            <option value="all">All</option>
+            {focusAreas.map((f) => <option value={f}>{f}</option>)}
+          </select>
+        </label>
+        <label class="tk-field">
+          <span class="caps muted">Sort by</span>
+          <select id="tk-sort">
+            <option value="score-desc">IDM score · high → low</option>
+            <option value="score-asc">IDM score · low → high</option>
+            <option value="jurisdiction">Jurisdiction</option>
+            <option value="status">Status</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <!-- ===== Entries ===== -->
+    <section class="tk-entries">
+      <div class="shell shell--table">
+        <div class="tk-meta-row">
+          <p class="eyebrow">Tracker</p>
+          <p class="muted tk-count" id="tk-count" aria-live="polite">
+            Showing {total} of {total} instruments
+          </p>
+        </div>
+
+        <ol class="tk-list" id="tk-list">
+          {entries.map((e) => (
+            <li
+              class="tk-entry"
+              id={e.slug}
+              data-jurisdiction={e.jurisdiction}
+              data-status={e.status}
+              data-focus={e.focus.join('|')}
+              data-tags={e.tags.join('|')}
+              data-score={e.score}
+              data-name={e.name.toLowerCase()}
+              data-notes={e.notes.toLowerCase()}
+            >
+              <article class="tk-entry__inner">
+                <header class="tk-entry__head">
+                  <div class="tk-entry__id">
+                    <p class="tk-entry__juris caps muted">{e.jurisdiction} · {e.status}</p>
+                    <h3 class="tk-entry__title">
+                      <a href={`#${e.slug}`} class="tk-entry__permalink-anchor">
+                        {e.name}
+                      </a>
+                    </h3>
+                  </div>
+                  <div class="tk-entry__grade">
+                    <div class:list={['tk-grade', 'tk-grade--lg', `tk-grade--${gradeClass(e.grade)}`]}>
+                      {e.grade}
+                    </div>
+                    <div class="tk-entry__bar" aria-hidden="true">
+                      <span style={`width:${e.score}%; background: ${`var(--grade-${gradeClass(e.grade).startsWith('a') || gradeClass(e.grade).startsWith('bp') ? 'a' : gradeClass(e.grade).startsWith('b') ? 'b' : gradeClass(e.grade).startsWith('c') ? 'c' : gradeClass(e.grade).startsWith('d') ? 'd' : 'f'})`}`}></span>
+                    </div>
+                    <p class="tk-entry__score mono muted">{e.score}/100</p>
+                  </div>
+                </header>
+
+                <div class="tk-entry__body">
+                  <div class="tk-entry__notes">
+                    <p>{e.notes}</p>
+                    <p class="tk-entry__gap">
+                      <span class="caps">Gap to fix:</span>
+                      <span>{e.gap}</span>
+                    </p>
+                  </div>
+                  <aside class="tk-entry__meta">
+                    <div class="tk-entry__metablock">
+                      <p class="caps muted">Coverage</p>
+                      <ul class="tk-chips">
+                        {e.tags.map((t) => <li class="tk-chip">{t}</li>)}
+                      </ul>
+                    </div>
+                    <div class="tk-entry__metablock">
+                      <p class="caps muted">Focus</p>
+                      <ul class="tk-chips tk-chips--focus">
+                        {e.focus.map((f) => <li class="tk-chip tk-chip--focus">{f}</li>)}
+                      </ul>
+                    </div>
+                    <div class="tk-entry__metablock">
+                      <p class="caps muted">Primary source</p>
+                      <p class="tk-entry__source">
+                        <a href={e.url} target="_blank" rel="noopener noreferrer">
+                          {e.primary}
+                          <span aria-hidden="true">↗</span>
+                        </a>
+                      </p>
+                    </div>
+                  </aside>
+                </div>
+              </article>
+            </li>
+          ))}
+        </ol>
+
+        <p class="tk-empty" id="tk-empty" hidden>
+          <span class="muted">No instruments match the current filters. </span>
+          <button type="button" class="tk-clear" data-tk-clear>Clear filters</button>
+        </p>
+      </div>
+    </section>
+
+    <hr class="rule rule-strong" />
+
+    <!-- ===== Notes ===== -->
+    <section class="tk-notes">
+      <div class="shell shell--prose">
+        <p class="eyebrow">Research notes</p>
+        <h2>What this tracker says about the landscape</h2>
+        <div class="tk-notes__grid">
+          <div class="tk-note">
+            <p>
+              The top tier is no longer just California and New York. <strong>Illinois SB 3261 / HB 4705</strong>
+              deserves a near-top grade because the text expressly requires confidential
+              submissions to the Attorney General for catastrophic-risk assessments resulting
+              from internal use, on at least a three-month cadence. That is not yet the full IDM
+              disclosure framework, but it is a real internal-deployment reporting hook.
+            </p>
+          </div>
+          <div class="tk-note">
+            <p>
+              The federal landscape remains thin for mandatory IDM disclosure. The <strong>VET AI Act</strong>
+              is relevant because it addresses internal and external AI assurance through NIST
+              guidelines, but it does not require frontier developers to report internal use.
+              Federal law is still mostly standards and assurance infrastructure, not disclosure
+              obligations.
+            </p>
+          </div>
+        </div>
+
+        <p class="eyebrow eyebrow--sub">Next expansion candidates</p>
+        <ul class="tk-future">
+          <li>
+            <strong>Federal procurement hooks.</strong> DoD, DOE, GSA, or OMB rules that
+            condition federal contracts on frontier-model safety reporting could matter if they
+            reach developers' internal systems.
+          </li>
+          <li>
+            <strong>International frontier regimes.</strong> UK AI Security Institute agreements,
+            Seoul / Frontier AI Safety commitments, Canada, Japan, and Singapore frameworks may
+            contain soft-law hooks worth tracking.
+          </li>
+          <li>
+            <strong>Agency implementation.</strong> SB 53 OES mechanisms, EU AI Office guidance,
+            and state AG rules may matter more than the statutes once reporting templates are
+            published.
+          </li>
+        </ul>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  /* ===== Hero ============================================== */
+  .tk-hero { padding-block: var(--s-8) var(--s-6); }
+  .tk-hero__title {
+    font-size: var(--step-4);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin: 0 0 var(--s-5);
+    text-wrap: balance;
+    max-width: 22ch;
+  }
+  .tk-summary {
+    margin-top: var(--s-7);
+  }
+  .tk-summary__lead {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    line-height: 1.55;
+    color: var(--ink);
+    margin: 0;
+    max-width: 56rem;
+    text-wrap: pretty;
+  }
+  .tk-summary__lead strong {
+    font-weight: 500;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ===== Grade rubric ====================================== */
+  .tk-rubric { padding-block: var(--s-7); }
+  .tk-rubric__head { margin-bottom: var(--s-6); }
+  .tk-rubric__title {
+    font-size: var(--step-2);
+    font-weight: 400;
+    margin: 0 0 var(--s-3);
+  }
+  .tk-rubric__sub { max-width: 36rem; margin: 0; }
+  .tk-rubric__rows {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--s-4);
+    max-width: none;
+  }
+  .tk-rubric__row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-3);
+    padding: var(--s-4);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    background: var(--paper-raised);
+    margin-bottom: 0;
+  }
+  .tk-rubric__desc {
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+    line-height: 1.5;
+    margin: 0;
+    max-width: none;
+  }
+  @media (max-width: 880px) {
+    .tk-rubric__rows {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* ===== Grade pill ======================================== */
+  .tk-grade {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.5rem;
+    color: var(--ink);
+  }
+  .tk-grade--lg {
+    font-size: 3rem;
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+  }
+  .tk-grade--A,  .tk-grade--Bp { color: var(--grade-a); }
+  .tk-grade--B,  .tk-grade--Bm { color: var(--grade-b); }
+  .tk-grade--Cp, .tk-grade--C, .tk-grade--Cm { color: var(--grade-c); }
+  .tk-grade--Dp, .tk-grade--D { color: var(--grade-d); }
+  .tk-grade--F { color: var(--grade-f); }
+
+  /* ===== Filter controls =================================== */
+  .tk-controls {
+    padding-block: var(--s-5);
+    position: sticky;
+    top: 4rem;
+    z-index: 10;
+    background: color-mix(in oklab, var(--paper) 92%, transparent);
+    backdrop-filter: saturate(140%) blur(8px);
+    -webkit-backdrop-filter: saturate(140%) blur(8px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .tk-controls__inner {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(4, 1fr);
+    gap: var(--s-4);
+    align-items: end;
+  }
+  .tk-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .tk-field input,
+  .tk-field select {
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    color: var(--ink);
+    background: var(--paper-raised);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md);
+    padding: 0.5rem 0.75rem;
+    transition: border-color var(--d-fast) var(--ease-out), background var(--d-fast) var(--ease-out);
+  }
+  .tk-field input:hover,
+  .tk-field select:hover {
+    border-color: var(--ink-muted);
+  }
+  .tk-field input:focus,
+  .tk-field select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  @media (max-width: 880px) {
+    .tk-controls__inner {
+      grid-template-columns: 1fr 1fr;
+    }
+    .tk-field--search {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* ===== Entries =========================================== */
+  .tk-entries { padding-block: var(--s-6) var(--s-7); }
+  .tk-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--s-5);
+  }
+  .tk-meta-row .eyebrow { margin: 0; }
+  .tk-count { margin: 0; font-size: 0.8125rem; }
+  .tk-list { list-style: none; margin: 0; padding: 0; max-width: none; }
+  .tk-entry {
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--hairline);
+  }
+  .tk-entry:last-child { border-bottom: 1px solid var(--hairline); }
+  .tk-entry[hidden] { display: none; }
+  .tk-entry:target { background: var(--citation-soft); }
+  .tk-entry__inner {
+    padding-block: var(--s-6);
+  }
+
+  .tk-entry__head {
+    display: grid;
+    grid-template-columns: 1fr 9rem;
+    gap: var(--s-6);
+    align-items: start;
+    margin-bottom: var(--s-5);
+  }
+  .tk-entry__juris {
+    font-size: 0.6875rem;
+    margin: 0 0 var(--s-2);
+  }
+  .tk-entry__title {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: 400;
+    letter-spacing: -0.022em;
+    line-height: 1.15;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .tk-entry__permalink-anchor {
+    color: var(--ink);
+    border-bottom: 0;
+    transition: color var(--d-fast) var(--ease-out);
+  }
+  .tk-entry__permalink-anchor:hover { color: var(--accent); }
+
+  .tk-entry__grade {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--s-2);
+  }
+  .tk-entry__bar {
+    width: 9rem;
+    height: 4px;
+    background: var(--hairline);
+    border-radius: var(--r-pill);
+    overflow: hidden;
+  }
+  .tk-entry__bar span {
+    display: block;
+    height: 100%;
+    border-radius: var(--r-pill);
+  }
+  .tk-entry__score {
+    margin: 0;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tk-entry__body {
+    display: grid;
+    grid-template-columns: 1fr 18rem;
+    gap: var(--s-7);
+    align-items: start;
+  }
+  .tk-entry__notes p {
+    margin: 0 0 var(--s-3);
+    line-height: 1.6;
+    max-width: none;
+  }
+  .tk-entry__gap {
+    border-top: 1px solid var(--hairline);
+    padding-top: var(--s-3);
+    margin-top: var(--s-4) !important;
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+  }
+  .tk-entry__gap .caps {
+    display: block;
+    margin-bottom: var(--s-1);
+    color: var(--citation);
+    font-weight: 500;
+  }
+
+  .tk-entry__meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-4);
+    border-left: 1px solid var(--hairline);
+    padding-left: var(--s-5);
+  }
+  .tk-entry__metablock .caps {
+    display: block;
+    margin-bottom: var(--s-2);
+    font-size: 0.6875rem;
+  }
+  .tk-chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-2);
+    max-width: none;
+  }
+  .tk-chip {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-pill);
+    color: var(--ink-muted);
+    margin-bottom: 0;
+  }
+  .tk-chip--focus {
+    border-color: var(--accent-soft);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .tk-entry__source a {
+    font-size: 0.875rem;
+    color: var(--ink-muted);
+    border-bottom-color: var(--hairline);
+  }
+  .tk-entry__source a:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  @media (max-width: 880px) {
+    .tk-entry__head {
+      grid-template-columns: 1fr;
+      gap: var(--s-3);
+    }
+    .tk-entry__grade {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--s-3);
+    }
+    .tk-entry__body {
+      grid-template-columns: 1fr;
+      gap: var(--s-5);
+    }
+    .tk-entry__meta {
+      border-left: 0;
+      border-top: 1px solid var(--hairline);
+      padding-left: 0;
+      padding-top: var(--s-4);
+    }
+  }
+
+  /* ===== Empty state ======================================= */
+  .tk-empty {
+    padding: var(--s-7);
+    text-align: center;
+    border: 1px dashed var(--hairline-strong);
+    border-radius: var(--r-md);
+    margin-top: var(--s-5);
+  }
+  .tk-clear {
+    background: transparent;
+    border: 0;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  /* ===== Notes ============================================= */
+  .tk-notes { padding-block: var(--s-7) var(--s-8); }
+  .tk-notes__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-5);
+    margin-block: var(--s-5);
+  }
+  .tk-note {
+    padding: var(--s-5);
+    border-left: 2px solid var(--citation);
+    background: var(--citation-soft);
+    border-radius: 0 var(--r-md) var(--r-md) 0;
+  }
+  .tk-note p { margin: 0; max-width: none; }
+  .eyebrow--sub { margin-top: var(--s-7); }
+  .tk-future {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+    display: grid;
+    gap: var(--s-4);
+  }
+  .tk-future li {
+    padding-left: var(--s-4);
+    border-left: 1px solid var(--hairline);
+    line-height: 1.55;
+    margin-bottom: 0;
+  }
+  @media (max-width: 720px) {
+    .tk-notes__grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<script>
+  // Filter / search / sort behaviour for the tracker.
+  (function () {
+    const list = document.getElementById('tk-list');
+    const empty = document.getElementById('tk-empty');
+    const count = document.getElementById('tk-count');
+    if (!list || !empty || !count) return;
+
+    const search = document.getElementById('tk-search') as HTMLInputElement | null;
+    const jurisSel = document.getElementById('tk-jurisdiction') as HTMLSelectElement | null;
+    const statusSel = document.getElementById('tk-status') as HTMLSelectElement | null;
+    const focusSel = document.getElementById('tk-focus') as HTMLSelectElement | null;
+    const sortSel = document.getElementById('tk-sort') as HTMLSelectElement | null;
+
+    const items = Array.from(list.querySelectorAll<HTMLElement>('.tk-entry'));
+    const total = items.length;
+
+    function apply() {
+      const q = (search?.value || '').trim().toLowerCase();
+      const jur = jurisSel?.value || 'all';
+      const st = statusSel?.value || 'all';
+      const fo = focusSel?.value || 'all';
+      const sort = sortSel?.value || 'score-desc';
+
+      let visible = 0;
+      for (const el of items) {
+        const name = el.dataset.name || '';
+        const notes = el.dataset.notes || '';
+        const tags = (el.dataset.tags || '').toLowerCase();
+        const focus = el.dataset.focus || '';
+        const matches =
+          (!q || name.includes(q) || notes.includes(q) || tags.includes(q)) &&
+          (jur === 'all' || el.dataset.jurisdiction === jur) &&
+          (st === 'all' || el.dataset.status === st) &&
+          (fo === 'all' || focus.split('|').includes(fo));
+        el.hidden = !matches;
+        if (matches) visible++;
+      }
+
+      // sort
+      const sorted = [...items];
+      sorted.sort((a, b) => {
+        if (sort === 'score-desc') return Number(b.dataset.score) - Number(a.dataset.score);
+        if (sort === 'score-asc') return Number(a.dataset.score) - Number(b.dataset.score);
+        if (sort === 'jurisdiction')
+          return (a.dataset.jurisdiction || '').localeCompare(b.dataset.jurisdiction || '');
+        if (sort === 'status')
+          return (a.dataset.status || '').localeCompare(b.dataset.status || '');
+        return 0;
+      });
+      for (const el of sorted) list.appendChild(el);
+
+      count.textContent =
+        visible === total
+          ? `Showing all ${total} instruments`
+          : `Showing ${visible} of ${total} instruments`;
+      empty.hidden = visible !== 0;
+    }
+
+    [search, jurisSel, statusSel, focusSel, sortSel].forEach((el) => {
+      el?.addEventListener('input', apply);
+      el?.addEventListener('change', apply);
+    });
+
+    document.querySelector('[data-tk-clear]')?.addEventListener('click', () => {
+      if (search) search.value = '';
+      if (jurisSel) jurisSel.value = 'all';
+      if (statusSel) statusSel.value = 'all';
+      if (focusSel) focusSel.value = 'all';
+      if (sortSel) sortSel.value = 'score-desc';
+      apply();
+    });
+  })();
+</script>

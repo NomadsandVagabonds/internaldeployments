@@ -1,0 +1,621 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { categories, idmDefinition } from '@/data/framework';
+
+const totalDisclosures = categories.reduce((sum, c) => sum + c.disclosures.length, 0);
+---
+
+<BaseLayout
+  title="Framework"
+  description="The four-category disclosure framework — capabilities, usage, safety mitigations, governance — rendered for use by safety teams, policy staff, and regulators."
+>
+  <article class="framework">
+    <!-- ===== Hero ===== -->
+    <header class="fw-hero">
+      <div class="shell shell--prose">
+        <p class="eyebrow">Section 01 · Framework</p>
+        <h1 class="fw-hero__title">A four-category disclosure framework for internally deployed models</h1>
+        <p class="lede">
+          Frontier developers should disclose enough about each internal deployment that a regulator,
+          auditor, or informed reader can assess its risk profile. We propose four categories:
+          <em>capabilities</em>, <em>usage</em>, <em>safety mitigations</em>, and <em>governance</em>.
+        </p>
+
+        <aside class="definition">
+          <p class="eyebrow">Definition</p>
+          <p class="definition__text">{idmDefinition.long}</p>
+        </aside>
+
+        <div class="fw-hero__meta">
+          <div class="meta-stat">
+            <span class="meta-stat__num">04</span>
+            <span class="meta-stat__label">categories</span>
+          </div>
+          <div class="meta-stat">
+            <span class="meta-stat__num">{String(totalDisclosures).padStart(2, '0')}</span>
+            <span class="meta-stat__label">disclosure questions</span>
+          </div>
+          <div class="meta-stat">
+            <span class="meta-stat__num">02</span>
+            <span class="meta-stat__label">reporting modes — public · confidential</span>
+          </div>
+        </div>
+
+        <div class="fw-hero__actions">
+          <button type="button" class="scope-toggle" data-scope-toggle aria-pressed="false">
+            <span class="scope-toggle__pill" data-scope="public">Public report</span>
+            <span class="scope-toggle__pill" data-scope="confidential">Confidential</span>
+          </button>
+          <a href="/checklist" class="btn-link">
+            Use as fillable checklist <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <hr class="rule rule-strong" />
+
+    <!-- ===== Table 1 — overview ===== -->
+    <section class="fw-table">
+      <div class="shell shell--table">
+        <div class="fw-table__header">
+          <p class="eyebrow">Table 1</p>
+          <h2 class="fw-table__title">Example disclosure table</h2>
+          <p class="fw-table__sub">
+            Disclosing information about internally deployed models across four key categories.
+            Click a category to read its benefit/risk analysis.
+          </p>
+        </div>
+
+        <div class="fw-rows" role="table" aria-label="Disclosure framework — Table 1">
+          {categories.map((cat) => (
+            <div class="fw-row" id={cat.slug} data-category={cat.slug} role="row">
+              <div class="fw-row__cat" role="cell">
+                <span class="fw-row__num mono">{cat.number}</span>
+                <h3 class="fw-row__catname">
+                  <a href={`#${cat.slug}-detail`} class="fw-row__catlink">{cat.name}</a>
+                </h3>
+                <p class="fw-row__desc">{cat.description}</p>
+              </div>
+              <ul class="fw-row__items" role="cell">
+                {cat.disclosures.map((d) => (
+                  <li
+                    class="fw-item"
+                    id={`${cat.slug}-${d.slug}`}
+                    data-scope={d.scope}
+                  >
+                    <div class="fw-item__main">
+                      <p class="fw-item__q">{d.question}</p>
+                      {d.examples && (
+                        <p class="fw-item__ex muted">{d.examples}</p>
+                      )}
+                    </div>
+                    <div class="fw-item__meta">
+                      <span class:list={['fw-scope', `fw-scope--${d.scope}`]}>
+                        {d.scope === 'public' ? 'public' : d.scope === 'confidential' ? 'confidential' : 'public + confidential'}
+                      </span>
+                      <a
+                        href={`#${cat.slug}-${d.slug}`}
+                        class="fw-item__permalink"
+                        aria-label={`Permalink to: ${d.question}`}
+                      >
+                        §
+                      </a>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule rule-strong" />
+
+    <!-- ===== Per-category deep dives ===== -->
+    <section class="fw-detail">
+      <div class="shell shell--prose">
+        <p class="eyebrow">Section 03 of the paper</p>
+        <h2>What information should be disclosed?</h2>
+        <p class="muted">
+          For each category, we outline what the disclosures cover, why they matter, the
+          legitimate concerns developers may raise, and how those concerns can be mitigated.
+        </p>
+      </div>
+
+      {categories.map((cat) => (
+        <article class="fw-cat" id={`${cat.slug}-detail`}>
+          <div class="shell shell--prose">
+            <header class="fw-cat__head">
+              <span class="fw-cat__num mono">Category {cat.number}</span>
+              <h3 class="fw-cat__title">{cat.name}</h3>
+              <p class="fw-cat__scope">{cat.scope}</p>
+            </header>
+
+            <details class="fw-cat__panel" open>
+              <summary class="fw-cat__summary">
+                <span>Benefits of disclosure</span>
+                <span class="fw-cat__chev" aria-hidden="true">+</span>
+              </summary>
+              <div class="fw-cat__body">
+                {cat.benefits.map((b) => <p>{b}</p>)}
+              </div>
+            </details>
+
+            <details class="fw-cat__panel">
+              <summary class="fw-cat__summary">
+                <span>Risks &amp; concerns</span>
+                <span class="fw-cat__chev" aria-hidden="true">+</span>
+              </summary>
+              <div class="fw-cat__body">
+                {cat.risks.map((r) => <p>{r}</p>)}
+              </div>
+            </details>
+
+            <details class="fw-cat__panel">
+              <summary class="fw-cat__summary">
+                <span>How those concerns can be mitigated</span>
+                <span class="fw-cat__chev" aria-hidden="true">+</span>
+              </summary>
+              <div class="fw-cat__body">
+                {cat.mitigations.map((m) => <p>{m}</p>)}
+              </div>
+            </details>
+          </div>
+        </article>
+      ))}
+    </section>
+
+    <hr class="rule rule-strong" />
+
+    <section class="fw-cta">
+      <div class="shell shell--prose">
+        <p class="eyebrow">Next</p>
+        <h2>Put the framework to work</h2>
+        <p>
+          The framework becomes useful when it's filled in. We've built two fillable templates
+          derived from these four categories — one for public model system cards, one for
+          confidential regulator submissions — alongside worked examples showing what good looks
+          like in practice.
+        </p>
+        <div class="fw-cta__actions">
+          <a href="/checklist" class="btn btn--primary">Open fillable templates</a>
+          <a href="/tracker" class="btn btn--ghost">See how current laws score</a>
+        </div>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .framework {
+    --fw-bleed: clamp(1.25rem, 4vw, 2.5rem);
+  }
+
+  /* ===== Hero ============================================== */
+
+  .fw-hero {
+    padding-block: var(--s-8) var(--s-7);
+  }
+  .fw-hero__title {
+    font-size: var(--step-4);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-weight: 400;
+    margin: 0 0 var(--s-5);
+    text-wrap: balance;
+    max-width: 22ch;
+  }
+  .fw-hero .lede em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .definition {
+    margin-block: var(--s-6);
+    padding: var(--s-5) var(--s-5) var(--s-5) var(--s-5);
+    background: var(--accent-soft);
+    border-left: 2px solid var(--accent);
+    border-radius: 0 var(--r-md) var(--r-md) 0;
+  }
+  .definition .eyebrow {
+    margin-bottom: var(--s-2);
+    color: var(--accent);
+  }
+  .definition__text {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    max-width: none;
+  }
+
+  .fw-hero__meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--s-5);
+    margin-block: var(--s-7);
+    padding-block: var(--s-5);
+    border-block: 1px solid var(--hairline);
+  }
+  .meta-stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .meta-stat__num {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .meta-stat__label {
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+
+  .fw-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-5);
+    margin-top: var(--s-2);
+  }
+
+  /* scope toggle — segmented control feel */
+  .scope-toggle {
+    display: inline-flex;
+    padding: 3px;
+    background: var(--paper-raised);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-pill);
+    font: inherit;
+    cursor: pointer;
+  }
+  .scope-toggle__pill {
+    padding: 0.4rem 0.875rem;
+    border-radius: var(--r-pill);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    transition: background-color var(--d-fast) var(--ease-out),
+      color var(--d-fast) var(--ease-out);
+  }
+  .scope-toggle[data-active='public'] .scope-toggle__pill[data-scope='public'],
+  .scope-toggle:not([data-active]) .scope-toggle__pill[data-scope='public'] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .scope-toggle[data-active='confidential'] .scope-toggle__pill[data-scope='confidential'] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .scope-toggle:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .btn-link {
+    color: var(--ink);
+    border-bottom: 1px solid var(--hairline-strong);
+    font-size: 0.9375rem;
+  }
+  .btn-link:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: var(--s-2);
+    padding: 0.625rem 1.125rem; border-radius: var(--r-pill);
+    font-size: 0.9375rem; font-weight: 500; border-bottom: 0;
+    transition: background-color var(--d-fast) var(--ease-out),
+      color var(--d-fast) var(--ease-out), border-color var(--d-fast) var(--ease-out);
+  }
+  .btn--primary { background: var(--ink); color: var(--paper); border: 1px solid var(--ink); }
+  .btn--primary:hover { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+  .btn--ghost { color: var(--ink-muted); border: 1px solid var(--hairline-strong); }
+  .btn--ghost:hover { color: var(--ink); border-color: var(--ink-muted); }
+
+  /* ===== Table 1 ========================================== */
+
+  .fw-table {
+    padding-block: var(--s-7) var(--s-7);
+  }
+  .fw-table__header {
+    margin-bottom: var(--s-6);
+    max-width: 44rem;
+  }
+  .fw-table__title {
+    font-size: var(--step-3);
+    margin: 0 0 var(--s-3);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+  }
+  .fw-table__sub {
+    color: var(--ink-muted);
+    margin: 0;
+    max-width: 40rem;
+  }
+
+  .fw-rows {
+    display: flex;
+    flex-direction: column;
+  }
+  .fw-row {
+    display: grid;
+    grid-template-columns: 18rem 1fr;
+    gap: var(--s-7);
+    padding-block: var(--s-6);
+    border-top: 1px solid var(--hairline);
+  }
+  .fw-row:last-child {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .fw-row__cat {
+    position: sticky;
+    top: 5rem;
+    align-self: start;
+    padding-right: var(--s-5);
+  }
+  .fw-row__num {
+    font-size: 0.75rem;
+    color: var(--citation);
+    letter-spacing: 0.14em;
+    display: block;
+    margin-bottom: var(--s-3);
+  }
+  .fw-row__catname {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin: 0 0 var(--s-3);
+    line-height: 1.1;
+  }
+  .fw-row__catlink {
+    color: var(--ink);
+    border-bottom: 0;
+    transition: color var(--d-fast) var(--ease-out);
+  }
+  .fw-row__catlink:hover { color: var(--accent); }
+  .fw-row__desc {
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+    margin: 0;
+    line-height: 1.5;
+    max-width: none;
+  }
+
+  .fw-row__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+  }
+  .fw-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--s-5);
+    padding-block: var(--s-4);
+    border-bottom: 1px solid var(--hairline);
+    transition: opacity var(--d-base) var(--ease-out);
+  }
+  .fw-item:last-child { border-bottom: 0; }
+  .fw-item:first-child { padding-top: 0; }
+
+  .fw-item__q {
+    font-size: 1.0625rem;
+    line-height: 1.5;
+    margin: 0 0 var(--s-2);
+    color: var(--ink);
+    text-wrap: pretty;
+    max-width: none;
+  }
+  .fw-item__ex {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin: 0;
+    color: var(--ink-muted);
+    max-width: none;
+  }
+  .fw-item__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--s-2);
+    padding-top: 0.25rem;
+  }
+  .fw-scope {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--r-sm);
+    white-space: nowrap;
+  }
+  .fw-scope--public {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+  .fw-scope--confidential {
+    background: var(--citation-soft);
+    color: var(--citation);
+  }
+  .fw-scope--both {
+    background: transparent;
+    color: var(--ink-muted);
+    border: 1px solid var(--hairline-strong);
+  }
+  .fw-item__permalink {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--ink-faint);
+    border-bottom: 0;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity var(--d-fast) var(--ease-out), color var(--d-fast) var(--ease-out);
+  }
+  .fw-item:hover .fw-item__permalink,
+  .fw-item:focus-within .fw-item__permalink {
+    opacity: 1;
+  }
+  .fw-item__permalink:hover { color: var(--accent); }
+
+  /* scope filter behaviour */
+  [data-scope-filter='public'] .fw-item[data-scope='confidential'] {
+    opacity: 0.3;
+  }
+  [data-scope-filter='confidential'] .fw-item[data-scope='public'] {
+    opacity: 0.3;
+  }
+
+  /* hash-targeted item highlight */
+  .fw-item:target {
+    background: var(--citation-soft);
+    margin-inline: calc(-1 * var(--s-3));
+    padding-inline: var(--s-3);
+    border-radius: var(--r-md);
+  }
+
+  /* ===== Per-category detail ============================== */
+
+  .fw-detail {
+    padding-block: var(--s-7);
+  }
+  .fw-cat {
+    padding-block: var(--s-7);
+    border-top: 1px solid var(--hairline);
+  }
+  .fw-cat:first-of-type { border-top: 0; }
+
+  .fw-cat__head {
+    margin-bottom: var(--s-5);
+  }
+  .fw-cat__num {
+    font-size: 0.75rem;
+    color: var(--citation);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: var(--s-3);
+  }
+  .fw-cat__title {
+    font-size: var(--step-3);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    margin: 0 0 var(--s-4);
+  }
+  .fw-cat__scope {
+    color: var(--ink-muted);
+    font-style: italic;
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    line-height: 1.5;
+    max-width: 36rem;
+  }
+
+  .fw-cat__panel {
+    border-top: 1px solid var(--hairline);
+    padding-block: var(--s-3);
+  }
+  .fw-cat__panel:last-of-type {
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .fw-cat__summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-block: var(--s-3);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .fw-cat__summary::-webkit-details-marker { display: none; }
+  .fw-cat__summary:hover { color: var(--accent); }
+  .fw-cat__chev {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--ink-muted);
+    line-height: 1;
+    transition: transform var(--d-base) var(--ease-out);
+  }
+  details[open] .fw-cat__chev {
+    transform: rotate(45deg);
+  }
+  .fw-cat__body {
+    padding-block: var(--s-3) var(--s-4);
+  }
+  .fw-cat__body p {
+    color: var(--ink);
+    line-height: 1.65;
+  }
+  .fw-cat__body p + p {
+    margin-top: var(--s-4);
+  }
+
+  /* ===== CTA ============================================== */
+
+  .fw-cta {
+    padding-block: var(--s-7) var(--s-8);
+  }
+  .fw-cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-4);
+  }
+
+  /* ===== Mobile =========================================== */
+
+  @media (max-width: 880px) {
+    .fw-row {
+      grid-template-columns: 1fr;
+      gap: var(--s-4);
+    }
+    .fw-row__cat {
+      position: static;
+      padding-right: 0;
+      padding-bottom: var(--s-3);
+      border-bottom: 1px solid var(--hairline);
+    }
+    .fw-hero__meta {
+      grid-template-columns: 1fr;
+      gap: var(--s-4);
+    }
+    .fw-item {
+      grid-template-columns: 1fr;
+      gap: var(--s-2);
+    }
+    .fw-item__meta {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .fw-item__permalink { opacity: 1; }
+  }
+</style>
+
+<script>
+  // Public / confidential toggle — filters Table 1 visually.
+  const toggle = document.querySelector('[data-scope-toggle]');
+  const article = document.querySelector('.framework');
+
+  if (toggle && article) {
+    toggle.addEventListener('click', () => {
+      const current = toggle.getAttribute('data-active');
+      const next = current === 'confidential' ? 'public' : 'confidential';
+      toggle.setAttribute('data-active', next);
+      toggle.setAttribute('aria-pressed', String(next === 'confidential'));
+      article.setAttribute('data-scope-filter', next);
+    });
+  }
+</script>

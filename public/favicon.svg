@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#fbfaf7"/>
+  <text x="16" y="24" text-anchor="middle" font-family="Georgia, 'Source Serif 4', serif" font-size="22" font-weight="500" fill="#16140f">§</text>
+  <style>
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #14130f; }
+      text { fill: #ede8dd; }
+    }
+  </style>
+</svg>

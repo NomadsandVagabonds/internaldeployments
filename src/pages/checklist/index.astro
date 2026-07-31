@@ -1,0 +1,603 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { categories } from '@/data/framework';
+import { mocks } from '@/data/checklistMocks';
+
+const totalItems = categories.reduce((sum, c) => sum + c.disclosures.length, 0);
+---
+
+<BaseLayout
+  title="Checklist"
+  description="Two fillable disclosure templates derived from the framework — public report and confidential regulator submission — with worked examples."
+>
+  <article class="checklist">
+    <!-- ===== Hero ===== -->
+    <header class="cl-hero">
+      <div class="shell shell--prose">
+        <p class="eyebrow">Section 03 · Templates</p>
+        <h1 class="cl-hero__title">Disclosure templates</h1>
+        <p class="lede">
+          Two fillable templates derived from the framework. Fill in your draft, share the URL,
+          or print to PDF. Three worked examples below show what completed submissions look
+          like in practice.
+        </p>
+
+        <div class="cl-hero__modes" role="tablist" aria-label="Template mode">
+          <button type="button" class="cl-mode is-active" role="tab" aria-selected="true" data-mode="public">
+            <span class="cl-mode__num mono">A</span>
+            <span class="cl-mode__body">
+              <span class="cl-mode__name">Public report template</span>
+              <span class="cl-mode__sub">High-level summaries appropriate for model system cards or public transparency reports.</span>
+            </span>
+          </button>
+          <button type="button" class="cl-mode" role="tab" aria-selected="false" data-mode="confidential">
+            <span class="cl-mode__num mono">B</span>
+            <span class="cl-mode__body">
+              <span class="cl-mode__name">Confidential regulator template</span>
+              <span class="cl-mode__sub">Granular fields for non-public submissions (SB 53 OES, EU AI Office, METR-style reviews).</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <hr class="rule rule-strong" />
+
+    <!-- ===== Worked examples ===== -->
+    <section class="cl-mocks">
+      <div class="shell shell--table">
+        <div class="cl-mocks__head">
+          <p class="eyebrow">Worked examples</p>
+          <h2>What good looks like</h2>
+          <p class="muted cl-mocks__sub">
+            Three illustrative completed submissions. None represent any real lab — they're
+            extrapolated from the spirit of published system cards and the practices the paper
+            recommends.
+          </p>
+        </div>
+
+        <div class="cl-mocks__tabs" role="tablist" aria-label="Worked example to load">
+          <button type="button" class="cl-tab is-active" data-mock="blank" role="tab" aria-selected="true">
+            <span class="cl-tab__name">Blank template</span>
+            <span class="cl-tab__sub">Start fresh</span>
+          </button>
+          {mocks.map((m, i) => (
+            <button
+              type="button"
+              class="cl-tab"
+              data-mock={m.id}
+              role="tab"
+              aria-selected="false"
+            >
+              <span class="cl-tab__name">{m.lab}</span>
+              <span class="cl-tab__sub">{m.tagline}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Form ===== -->
+    <section class="cl-form-section">
+      <div class="shell shell--table">
+        <form class="cl-form" id="cl-form" autocomplete="off" novalidate>
+          <fieldset class="cl-meta">
+            <legend class="caps muted">Submission metadata</legend>
+            <div class="cl-meta__grid">
+              <label class="cl-field">
+                <span class="caps">Lab name</span>
+                <input type="text" name="meta.lab" placeholder="e.g., Frontier Labs" />
+              </label>
+              <label class="cl-field">
+                <span class="caps">Report date</span>
+                <input type="date" name="meta.reportDate" />
+              </label>
+              <label class="cl-field cl-field--span">
+                <span class="caps">Reporting period</span>
+                <input type="text" name="meta.period" placeholder="e.g., Q1 2026 (January — March)" />
+              </label>
+            </div>
+          </fieldset>
+
+          {categories.map((cat) => (
+            <fieldset class="cl-cat" id={`cl-${cat.slug}`}>
+              <legend class="cl-cat__legend">
+                <span class="cl-cat__num mono">Category {cat.number}</span>
+                <span class="cl-cat__name">{cat.name}</span>
+              </legend>
+              <p class="cl-cat__intro">{cat.description}</p>
+
+              <ol class="cl-items">
+                {cat.disclosures.map((d) => (
+                  <li
+                    class="cl-item"
+                    data-scope={d.scope}
+                    id={`cl-${cat.slug}-${d.slug}`}
+                  >
+                    <div class="cl-item__prompt">
+                      <p class="cl-item__q">{d.question}</p>
+                      {d.examples && <p class="cl-item__ex muted">{d.examples}</p>}
+                      <span class:list={['fw-scope', `fw-scope--${d.scope}`]}>
+                        {d.scope === 'public' ? 'public' : d.scope === 'confidential' ? 'confidential' : 'public + confidential'}
+                      </span>
+                    </div>
+                    <label class="cl-item__answer">
+                      <span class="caps muted">Answer</span>
+                      <textarea
+                        name={`${cat.slug}.${d.slug}`}
+                        rows="4"
+                        placeholder="Your disclosure response…"
+                      ></textarea>
+                    </label>
+                  </li>
+                ))}
+              </ol>
+            </fieldset>
+          ))}
+
+          <div class="cl-actions no-print">
+            <button type="button" class="btn btn--primary" data-cl-print>
+              Print to PDF
+            </button>
+            <button type="button" class="btn btn--ghost" data-cl-share>
+              Copy share link
+            </button>
+            <button type="button" class="btn btn--ghost" data-cl-clear>
+              Clear all
+            </button>
+            <span class="cl-counter mono muted" id="cl-counter">
+              0 of {totalItems} answered
+            </span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    {/* mock data for client-side loader */}
+    <script type="application/json" id="cl-mocks-data" set:html={JSON.stringify(mocks)} />
+    <script is:inline>
+      (function () {
+        var el = document.getElementById('cl-mocks-data');
+        if (el) {
+          try { window.__IDM_MOCKS__ = JSON.parse(el.textContent || '[]'); } catch (_) {}
+        }
+      })();
+    </script>
+  </article>
+</BaseLayout>
+
+<style>
+  /* ===== Hero ============================================== */
+  .cl-hero { padding-block: var(--s-8) var(--s-7); }
+  .cl-hero__title {
+    font-size: var(--step-4);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin: 0 0 var(--s-5);
+  }
+  .cl-hero__modes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-3);
+    margin-top: var(--s-6);
+    max-width: none;
+  }
+  .cl-mode {
+    display: flex;
+    gap: var(--s-4);
+    padding: var(--s-5);
+    background: transparent;
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: var(--ink);
+    transition: border-color var(--d-fast) var(--ease-out),
+      background-color var(--d-fast) var(--ease-out);
+  }
+  .cl-mode:hover {
+    border-color: var(--hairline-strong);
+  }
+  .cl-mode.is-active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .cl-mode__num {
+    font-size: 0.875rem;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .cl-mode__body { display: flex; flex-direction: column; gap: var(--s-1); }
+  .cl-mode__name {
+    font-family: var(--font-display);
+    font-size: 1.0625rem;
+    font-weight: 500;
+  }
+  .cl-mode__sub {
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+    line-height: 1.45;
+  }
+  @media (max-width: 720px) {
+    .cl-hero__modes { grid-template-columns: 1fr; }
+  }
+
+  /* ===== Mocks ============================================= */
+  .cl-mocks { padding-block: var(--s-7) var(--s-6); }
+  .cl-mocks__head { margin-bottom: var(--s-5); max-width: 40rem; }
+  .cl-mocks__head h2 {
+    font-size: var(--step-2);
+    margin: var(--s-2) 0 var(--s-3);
+    font-weight: 400;
+  }
+  .cl-mocks__sub { max-width: 36rem; margin: 0; }
+
+  .cl-mocks__tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--s-3);
+  }
+  .cl-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s-1);
+    padding: var(--s-4);
+    background: transparent;
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    text-align: left;
+    cursor: pointer;
+    color: var(--ink);
+    transition: all var(--d-fast) var(--ease-out);
+    font: inherit;
+  }
+  .cl-tab:hover { border-color: var(--hairline-strong); background: var(--paper-raised); }
+  .cl-tab.is-active {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .cl-tab__name {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  .cl-tab__sub {
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+    line-height: 1.4;
+  }
+  .cl-tab.is-active .cl-tab__sub { color: var(--paper); opacity: 0.75; }
+  @media (max-width: 880px) {
+    .cl-mocks__tabs { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ===== Form ============================================== */
+  .cl-form-section { padding-block: var(--s-6) var(--s-8); }
+  .cl-form { max-width: none; }
+  .cl-meta {
+    border: 0;
+    padding: 0;
+    margin: 0 0 var(--s-7);
+  }
+  .cl-meta legend { padding: 0; margin-bottom: var(--s-3); }
+  .cl-meta__grid {
+    display: grid;
+    grid-template-columns: 1fr 12rem;
+    gap: var(--s-4);
+  }
+
+  .cl-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+  .cl-field--span { grid-column: 1 / -1; }
+  .cl-field input,
+  .cl-field textarea,
+  .cl-item__answer textarea {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink);
+    background: var(--paper-raised);
+    border: 1px solid var(--hairline-strong);
+    border-radius: var(--r-md);
+    padding: 0.625rem 0.875rem;
+    width: 100%;
+    transition: border-color var(--d-fast) var(--ease-out),
+      box-shadow var(--d-fast) var(--ease-out);
+    resize: vertical;
+  }
+  .cl-field input:focus,
+  .cl-field textarea:focus,
+  .cl-item__answer textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .cl-cat {
+    border: 0;
+    padding: 0;
+    margin: 0 0 var(--s-7);
+    border-top: 1px solid var(--hairline-strong);
+    padding-top: var(--s-6);
+  }
+  .cl-cat__legend {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    padding: 0;
+    margin-bottom: var(--s-3);
+  }
+  .cl-cat__num {
+    font-size: 0.75rem;
+    color: var(--citation);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .cl-cat__name {
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+  }
+  .cl-cat__intro {
+    color: var(--ink-muted);
+    font-style: italic;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    margin: 0 0 var(--s-5);
+    max-width: 40rem;
+  }
+
+  .cl-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: none;
+  }
+  .cl-item {
+    display: grid;
+    grid-template-columns: 22rem 1fr;
+    gap: var(--s-6);
+    padding-block: var(--s-5);
+    border-top: 1px solid var(--hairline);
+    margin-bottom: 0;
+    transition: opacity var(--d-base) var(--ease-out);
+  }
+  .cl-item:target {
+    background: var(--citation-soft);
+    margin-inline: calc(-1 * var(--s-3));
+    padding-inline: var(--s-3);
+    border-radius: var(--r-md);
+  }
+  .cl-item__q {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0 0 var(--s-2);
+    max-width: none;
+    color: var(--ink);
+  }
+  .cl-item__ex {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    margin: 0 0 var(--s-3);
+    max-width: none;
+  }
+  .cl-item__answer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-2);
+  }
+
+  .fw-scope {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--r-sm);
+    margin-top: var(--s-2);
+  }
+  .fw-scope--public { background: var(--accent-soft); color: var(--accent); }
+  .fw-scope--confidential { background: var(--citation-soft); color: var(--citation); }
+  .fw-scope--both { color: var(--ink-muted); border: 1px solid var(--hairline-strong); }
+
+  /* mode filter */
+  [data-mode-filter='public'] .cl-item[data-scope='confidential'] { display: none; }
+
+  /* ===== Actions =========================================== */
+  .cl-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-3);
+    padding-top: var(--s-6);
+    border-top: 1px solid var(--hairline);
+    margin-top: var(--s-6);
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: var(--s-2);
+    padding: 0.625rem 1.125rem; border-radius: var(--r-pill);
+    font-size: 0.9375rem; font-weight: 500; border-bottom: 0;
+    cursor: pointer; font-family: var(--font-body);
+    transition: all var(--d-fast) var(--ease-out);
+  }
+  .btn--primary { background: var(--ink); color: var(--paper); border: 1px solid var(--ink); }
+  .btn--primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn--ghost { background: transparent; color: var(--ink-muted); border: 1px solid var(--hairline-strong); }
+  .btn--ghost:hover { color: var(--ink); border-color: var(--ink-muted); }
+  .cl-counter {
+    margin-left: auto;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 720px) {
+    .cl-counter { margin-left: 0; }
+  }
+
+  @media (max-width: 880px) {
+    .cl-meta__grid { grid-template-columns: 1fr; }
+    .cl-item { grid-template-columns: 1fr; gap: var(--s-3); }
+  }
+
+  @media print {
+    .cl-hero__modes,
+    .cl-mocks,
+    .cl-actions { display: none; }
+    .cl-cat { page-break-inside: avoid; border-top: 2px solid #000; }
+    .cl-item { page-break-inside: avoid; }
+    textarea, input { border: 1px solid #999; background: #fff; }
+  }
+</style>
+
+<script>
+  // =====================================================================
+  // Checklist behaviour: mode toggle, mock loading, URL state, print, share.
+  // =====================================================================
+
+  type Answers = Record<string, string>;
+  const form = document.getElementById('cl-form') as HTMLFormElement | null;
+  const counter = document.getElementById('cl-counter');
+  const article = document.querySelector('.checklist');
+  const modeButtons = document.querySelectorAll<HTMLButtonElement>('.cl-mode');
+  const tabButtons = document.querySelectorAll<HTMLButtonElement>('.cl-tab');
+
+  if (form && counter && article) {
+    // ----- Mode toggle (public / confidential) ----------
+    modeButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        modeButtons.forEach((b) => {
+          b.classList.remove('is-active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-selected', 'true');
+        const mode = btn.dataset.mode || 'public';
+        article.setAttribute('data-mode-filter', mode);
+      });
+    });
+    article.setAttribute('data-mode-filter', 'public');
+
+    // ----- Counter --------------------------------------
+    function updateCounter() {
+      const allTextareas = form!.querySelectorAll<HTMLTextAreaElement>(
+        '.cl-item:not([style*="display: none"]) textarea',
+      );
+      const filled = Array.from(allTextareas).filter((t) => t.value.trim().length > 0).length;
+      const visible = allTextareas.length;
+      counter!.textContent = `${filled} of ${visible} answered`;
+    }
+    form.addEventListener('input', () => {
+      updateCounter();
+      writeURL();
+    });
+
+    // ----- Mock loading ---------------------------------
+    function loadMock(mockId: string) {
+      // Reset
+      const inputs = form!.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        'input, textarea',
+      );
+      inputs.forEach((i) => (i.value = ''));
+
+      if (mockId === 'blank') {
+        updateCounter();
+        return;
+      }
+
+      // Find mock data — embedded as JSON via data attribute
+      const mock = (window as any).__IDM_MOCKS__?.find((m: any) => m.id === mockId);
+      if (!mock) return;
+
+      (form!.elements.namedItem('meta.lab') as HTMLInputElement).value = mock.lab;
+      (form!.elements.namedItem('meta.reportDate') as HTMLInputElement).value = mock.reportDate;
+      (form!.elements.namedItem('meta.period') as HTMLInputElement).value = mock.period;
+
+      Object.entries(mock.answers).forEach(([key, value]) => {
+        // key is like "capabilities-relation-to-external"
+        const [cat, ...rest] = key.split('-');
+        const slug = rest.join('-');
+        const fieldName = `${cat}.${slug}`;
+        const el = form!.elements.namedItem(fieldName) as HTMLTextAreaElement | null;
+        if (el) el.value = value as string;
+      });
+      updateCounter();
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        tabButtons.forEach((b) => {
+          b.classList.remove('is-active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('is-active');
+        btn.setAttribute('aria-selected', 'true');
+        loadMock(btn.dataset.mock || 'blank');
+      });
+    });
+
+    // ----- URL state ------------------------------------
+    function writeURL() {
+      const formData = new FormData(form!);
+      const obj: Answers = {};
+      formData.forEach((v, k) => {
+        const s = String(v).trim();
+        if (s) obj[k] = s;
+      });
+      if (Object.keys(obj).length === 0) {
+        history.replaceState(null, '', location.pathname);
+        return;
+      }
+      try {
+        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+        history.replaceState(null, '', `${location.pathname}#d=${encoded}`);
+      } catch (_) {}
+    }
+
+    function readURL() {
+      const hash = location.hash;
+      const m = hash.match(/#d=(.+)/);
+      if (!m) return;
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(m[1]))));
+        Object.entries(decoded).forEach(([k, v]) => {
+          const el = form!.elements.namedItem(k) as HTMLInputElement | HTMLTextAreaElement | null;
+          if (el) el.value = String(v);
+        });
+        updateCounter();
+      } catch (_) {}
+    }
+    readURL();
+
+    // ----- Buttons --------------------------------------
+    document.querySelector('[data-cl-print]')?.addEventListener('click', () => window.print());
+    document.querySelector('[data-cl-clear]')?.addEventListener('click', () => {
+      if (!confirm('Clear all fields?')) return;
+      form!.reset();
+      history.replaceState(null, '', location.pathname);
+      updateCounter();
+    });
+    document.querySelector('[data-cl-share]')?.addEventListener('click', async (e) => {
+      writeURL();
+      try {
+        await navigator.clipboard.writeText(location.href);
+        const btn = e.currentTarget as HTMLButtonElement;
+        const orig = btn.textContent || '';
+        btn.textContent = 'Link copied';
+        setTimeout(() => { btn.textContent = orig; }, 1800);
+      } catch (_) {}
+    });
+
+    updateCounter();
+  }
+</script>
+
+

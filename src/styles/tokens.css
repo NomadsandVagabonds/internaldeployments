@@ -1,0 +1,124 @@
+/* IDM Disclosure — design tokens
+   See ../../.impeccable.md for rationale.
+   Single source of truth for color, type, space, motion. */
+
+:root {
+  /* light theme — default */
+  --paper: #fbfaf7;
+  --paper-raised: #ffffff;
+  --ink: #16140f;
+  --ink-muted: #6b655c;
+  --ink-faint: #a39d92;
+  --hairline: #e4ded2;
+  --hairline-strong: #cfc7b6;
+  --accent: #2a4a6b;
+  --accent-soft: rgba(42, 74, 107, 0.08);
+  --citation: #8a4a1f;
+  --citation-soft: rgba(138, 74, 31, 0.08);
+
+  /* grade colors — restrained, not dashboard-bright */
+  --grade-a: #2f6849;
+  --grade-b: #2a4a6b;
+  --grade-c: #8a6a1f;
+  --grade-d: #8a4a1f;
+  --grade-f: #7a2e2a;
+
+  /* type */
+  --font-display: 'Source Serif 4 Variable', 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* fluid type scale — 17px base, modular ratio ~1.2 */
+  --step--1: clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem);
+  --step-0: clamp(1.0625rem, 1.05rem + 0.1vw, 1.125rem);
+  --step-1: clamp(1.25rem, 1.2rem + 0.25vw, 1.375rem);
+  --step-2: clamp(1.5rem, 1.4rem + 0.5vw, 1.75rem);
+  --step-3: clamp(1.875rem, 1.7rem + 0.875vw, 2.375rem);
+  --step-4: clamp(2.5rem, 2.1rem + 2vw, 3.5rem);
+  --step-5: clamp(3rem, 2.4rem + 3vw, 4.75rem);
+
+  /* spacing scale — 4px base, modular */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+  --s-10: 8rem;
+
+  /* layout */
+  --measure-prose: 38rem; /* ~640px / ~68ch */
+  --measure-wide: 72rem;
+  --measure-table: 84rem;
+
+  /* motion — used sparingly */
+  --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --d-fast: 120ms;
+  --d-base: 180ms;
+  --d-slow: 300ms;
+
+  /* radii — minimal */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-pill: 999px;
+
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --paper: #14130f;
+  --paper-raised: #1c1b16;
+  --ink: #ede8dd;
+  --ink-muted: #8a847a;
+  --ink-faint: #5c5750;
+  --hairline: #2a2823;
+  --hairline-strong: #3a3730;
+  --accent: #6b95c2;
+  --accent-soft: rgba(107, 149, 194, 0.12);
+  --citation: #c68b5b;
+  --citation-soft: rgba(198, 139, 91, 0.12);
+
+  --grade-a: #6fb38a;
+  --grade-b: #6b95c2;
+  --grade-c: #c9a665;
+  --grade-d: #c68b5b;
+  --grade-f: #c97770;
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --paper: #14130f;
+    --paper-raised: #1c1b16;
+    --ink: #ede8dd;
+    --ink-muted: #8a847a;
+    --ink-faint: #5c5750;
+    --hairline: #2a2823;
+    --hairline-strong: #3a3730;
+    --accent: #6b95c2;
+    --accent-soft: rgba(107, 149, 194, 0.12);
+    --citation: #c68b5b;
+    --citation-soft: rgba(198, 139, 91, 0.12);
+    --grade-a: #6fb38a;
+    --grade-b: #6b95c2;
+    --grade-c: #c9a665;
+    --grade-d: #c68b5b;
+    --grade-f: #c97770;
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

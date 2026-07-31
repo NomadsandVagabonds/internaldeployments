@@ -1,0 +1,90 @@
+---
+const lastUpdated = new Date('2026-04-28').toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<footer class="site-footer no-print">
+  <hr class="rule" />
+  <div class="shell shell--table site-footer__inner">
+    <div class="site-footer__col">
+      <p class="eyebrow">Citation</p>
+      <p class="cite">
+        Charnock, J., Mehta Moreno, R., Miller, J., &amp; Anderson, W.&nbsp;L. (2026).
+        <em>What Should Frontier AI Developers Disclose About Internal Deployments?</em>
+        arXiv:2604.23065.
+      </p>
+      <p class="cite-links">
+        <a href="https://arxiv.org/abs/2604.23065">arXiv abstract</a>
+        <span aria-hidden="true">·</span>
+        <a href="/paper.pdf">PDF</a>
+      </p>
+    </div>
+
+    <div class="site-footer__col">
+      <p class="eyebrow">About this site</p>
+      <p class="about">
+        An independent reference resource for the paper. Tracker is editorial assessment, not
+        legal advice. Refreshed quarterly to align with SB&nbsp;53 OES reporting cycles.
+      </p>
+    </div>
+
+    <div class="site-footer__col site-footer__meta">
+      <p class="eyebrow">Last updated</p>
+      <p class="mono">{lastUpdated}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--s-10);
+    padding-block: var(--s-7) var(--s-8);
+    color: var(--ink-muted);
+  }
+  .site-footer__inner {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr;
+    gap: var(--s-7);
+    padding-top: var(--s-6);
+  }
+  .site-footer__col p {
+    max-width: none;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .cite em {
+    font-style: italic;
+  }
+  .cite-links {
+    margin-top: var(--s-2);
+    display: flex;
+    gap: var(--s-3);
+    align-items: center;
+  }
+  .cite-links a {
+    color: var(--ink-muted);
+    border-bottom-color: var(--hairline);
+  }
+  .cite-links a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--ink-muted);
+  }
+  .about {
+    color: var(--ink-muted);
+  }
+  .site-footer__meta {
+    text-align: right;
+  }
+  @media (max-width: 720px) {
+    .site-footer__inner {
+      grid-template-columns: 1fr;
+      gap: var(--s-5);
+    }
+    .site-footer__meta {
+      text-align: left;
+    }
+  }
+</style>
