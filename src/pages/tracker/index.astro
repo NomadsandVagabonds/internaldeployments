@@ -34,7 +34,7 @@ function gradeClass(grade: string): string {
     <!-- ===== Hero ===== -->
     <header class="tk-hero">
       <div class="shell shell--prose">
-        <p class="eyebrow">Section 02 · Tracker</p>
+        <p class="eyebrow">Section 03 · Tracker</p>
         <h1 class="tk-hero__title">How current law sees internal deployments</h1>
         <p class="lede">
           Fourteen laws, bills, and voluntary frameworks — graded against the four-category
@@ -375,9 +375,16 @@ function gradeClass(grade: string): string {
     display: flex;
     flex-direction: column;
     gap: var(--s-2);
+    /* Grid items default to min-width:auto, so a select as wide as
+       "IDM score · high → low" forces the whole bar past the viewport on
+       narrow screens. Letting the track shrink is what keeps the filter bar
+       inside the page on mobile. */
+    min-width: 0;
   }
   .tk-field input,
   .tk-field select {
+    width: 100%;
+    max-width: 100%;
     font-family: var(--font-body);
     font-size: 0.9375rem;
     color: var(--ink);
@@ -403,6 +410,11 @@ function gradeClass(grade: string): string {
     }
     .tk-field--search {
       grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 420px) {
+    .tk-controls__inner {
+      grid-template-columns: 1fr;
     }
   }
 

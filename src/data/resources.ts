@@ -58,7 +58,7 @@ export const primaryTexts: Resource[] = [
     title: 'SB 3261 / HB 4705 — AI Public Safety and Child Protection Transparency Act',
     publisher: 'Illinois General Assembly',
     year: '2025',
-    url: 'https://www.ilga.gov/Legislation/BillStatus/FullText?DocNum=3261&DocTypeID=SB&GAID=18&LegId=166031&SessionID=114',
+    url: 'https://www.ilga.gov/Legislation/BillStatus?GAID=18&DocNum=3261&DocTypeID=SB&LegId=166031&SessionID=114',
     note:
       'Pending Illinois bill that requires confidential submissions to the Attorney General for catastrophic-risk assessments resulting from internal use, on at least a three-month cadence.',
   },
@@ -380,7 +380,7 @@ export const literature: Resource[] = [
     authors: 'METR',
     publisher: 'METR',
     year: '2025',
-    url: 'https://metr.org/blog/2025-11-20-what-should-companies-share/',
+    url: 'https://metr.org/blog/2025-06-27-risk-transparency/',
     note: 'METR\'s own account of what frontier developers should publish. Useful comparator for the scope of this framework.',
     bibKey: 'what-should-companies-share-about-risks-from-frontier-ai-models',
   },

@@ -87,7 +87,7 @@ export const tracker: TrackerEntry[] = [
     notes:
       'Surprisingly close to SB 53 for IDMs. Requires large frontier developers to confidentially submit summaries of catastrophic-risk assessments from internal use and to transmit those summaries to the Attorney General at least every three months. Includes incident reporting, redaction rules and audit machinery. Grades below an A because the required internal-use summaries are risk-summary based, not structured IDM disclosure.',
     gap: 'Convert the internal-use summary requirement into a true IDM report organised around capabilities, usage, safety mitigations and governance.',
-    url: 'https://www.ilga.gov/Legislation/BillStatus/FullText?DocNum=3261&DocTypeID=SB&GAID=18&LegId=166031&SessionID=114',
+    url: 'https://www.ilga.gov/Legislation/BillStatus?GAID=18&DocNum=3261&DocTypeID=SB&LegId=166031&SessionID=114',
     primary: 'Illinois General Assembly, SB 3261 full text',
   },
   {
