@@ -13,8 +13,7 @@ const totalItems = categories.reduce((sum, c) => sum + c.disclosures.length, 0);
   <article class="checklist">
     <!-- ===== Hero ===== -->
     <header class="cl-hero">
-      <div class="shell shell--prose">
-        <p class="eyebrow">Section 04 · Templates</p>
+      <div class="shell shell--wide">
         <h1 class="cl-hero__title">Disclosure templates</h1>
         <p class="lede">
           Two fillable templates derived from the framework. Fill in your draft, share the URL,
@@ -170,11 +169,12 @@ const totalItems = categories.reduce((sum, c) => sum + c.disclosures.length, 0);
   /* ===== Hero ============================================== */
   .cl-hero { padding-block: var(--s-8) var(--s-7); }
   .cl-hero__title {
-    font-size: var(--step-4);
-    font-weight: 400;
-    letter-spacing: -0.03em;
-    line-height: 1.05;
+    font-size: var(--t-3xl);
+    font-weight: 620;
+    letter-spacing: -0.033em;
+    line-height: 1.03;
     margin: 0 0 var(--s-5);
+    max-width: 20ch;
   }
   .cl-hero__modes {
     display: grid;

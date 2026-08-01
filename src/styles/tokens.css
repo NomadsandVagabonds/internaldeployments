@@ -1,121 +1,209 @@
-/* IDM Disclosure — design tokens
-   See ../../.impeccable.md for rationale.
-   Single source of truth for color, type, space, motion. */
+/* internaldeployments.ai — design tokens
+   Single source of truth for colour, type, space, motion.
+
+   Typography: Archivo carries everything structural — headings, UI, labels and
+   data — because it has a genuine range (100–900) and true tabular figures,
+   which this site needs more than it needs a display serif. Newsreader is held
+   back for running prose and quotations, where a reading face earns its place.
+   No monospace: "technical" is not a typeface.
+
+   Colour: near-monochrome. Colour is reserved for links, focus, and the verdict
+   and grade scales, where it carries information. Nothing is coloured for
+   emphasis — weight and size do that work. */
 
 :root {
-  /* light theme — default */
-  --paper: #fbfaf7;
-  --paper-raised: #ffffff;
-  --ink: #16140f;
-  --ink-muted: #6b655c;
-  --ink-faint: #a39d92;
-  --hairline: #e4ded2;
-  --hairline-strong: #cfc7b6;
-  --accent: #2a4a6b;
-  --accent-soft: rgba(42, 74, 107, 0.08);
-  --citation: #8a4a1f;
-  --citation-soft: rgba(138, 74, 31, 0.08);
+  /* ---- surfaces & ink (light, the default) ---------------------------- */
+  --paper: #fcfcfb;
+  --surface: #f5f5f3;
+  --surface-2: #eeeeeb;
+  --ink: #17181a;
+  --ink-2: #5a5d63;
+  --ink-3: #8b8e94;
+  --line: #e5e5e1;
+  --line-strong: #d0d0cb;
 
-  /* grade colors — restrained, not dashboard-bright */
-  --grade-a: #2f6849;
-  --grade-b: #2a4a6b;
-  --grade-c: #8a6a1f;
-  --grade-d: #8a4a1f;
-  --grade-f: #7a2e2a;
+  --accent: #2f4a91;
+  --accent-hover: #243a75;
+  --accent-wash: color-mix(in oklab, var(--accent) 7%, transparent);
 
-  /* type */
-  --font-display: 'Source Serif 4 Variable', 'Source Serif 4', 'Iowan Old Style', Georgia, serif;
-  --font-body: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  /* ---- data scales — the only other place colour appears -------------- */
+  --v-meets: #2c6a4a;
+  --v-partial: #3f6ba8;
+  --v-adjacent: #8b8e94;
+  --v-none: #c4c4bf;
 
-  /* fluid type scale — 17px base, modular ratio ~1.2 */
-  --step--1: clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem);
-  --step-0: clamp(1.0625rem, 1.05rem + 0.1vw, 1.125rem);
-  --step-1: clamp(1.25rem, 1.2rem + 0.25vw, 1.375rem);
-  --step-2: clamp(1.5rem, 1.4rem + 0.5vw, 1.75rem);
-  --step-3: clamp(1.875rem, 1.7rem + 0.875vw, 2.375rem);
-  --step-4: clamp(2.5rem, 2.1rem + 2vw, 3.5rem);
-  --step-5: clamp(3rem, 2.4rem + 3vw, 4.75rem);
+  --grade-a: #2c6a4a;
+  --grade-b: #3f6ba8;
+  --grade-c: #8a6a24;
+  --grade-d: #96552a;
+  --grade-f: #8a3733;
 
-  /* spacing scale — 4px base, modular */
+  /* ---- type ----------------------------------------------------------- */
+  --font-sans: 'Archivo Variable', 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Newsreader Variable', 'Newsreader', 'Iowan Old Style', Georgia, serif;
+
+  /* Fluid scale, 16px base, ~1.22 ratio. Display steps get their own
+     tracking below — large text needs to be set tighter than body text. */
+  --t-xs: 0.75rem;
+  --t-sm: 0.8125rem;
+  --t-base: 0.9375rem;
+  --t-md: 1rem;
+  --t-lg: clamp(1.125rem, 1.08rem + 0.22vw, 1.25rem);
+  --t-xl: clamp(1.375rem, 1.29rem + 0.42vw, 1.625rem);
+  --t-2xl: clamp(1.75rem, 1.58rem + 0.85vw, 2.25rem);
+  --t-3xl: clamp(2.25rem, 1.9rem + 1.75vw, 3.25rem);
+  --t-4xl: clamp(2.75rem, 2.1rem + 3.2vw, 4.5rem);
+
+  --track-tight: -0.021em;
+  --track-tighter: -0.032em;
+  --track-wide: 0.02em;
+
+  /* ---- space — 4px base ----------------------------------------------- */
   --s-1: 0.25rem;
   --s-2: 0.5rem;
   --s-3: 0.75rem;
   --s-4: 1rem;
   --s-5: 1.5rem;
   --s-6: 2rem;
-  --s-7: 3rem;
+  --s-7: 2.75rem;
   --s-8: 4rem;
   --s-9: 6rem;
-  --s-10: 8rem;
+  --s-10: 8.5rem;
 
-  /* layout */
-  --measure-prose: 38rem; /* ~640px / ~68ch */
-  --measure-wide: 72rem;
-  --measure-table: 84rem;
+  /* ---- layout ---------------------------------------------------------- */
+  --measure-prose: 36rem;
+  --measure-content: 68rem;
+  --measure-wide: 82rem;
+  --gutter: clamp(1.25rem, 5vw, 3.5rem);
 
-  /* motion — used sparingly */
-  --ease-out: cubic-bezier(0.2, 0.6, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --d-fast: 120ms;
-  --d-base: 180ms;
-  --d-slow: 300ms;
+  /* ---- motion ---------------------------------------------------------- */
+  --ease: cubic-bezier(0.22, 0.61, 0.24, 1);
+  --d-fast: 130ms;
+  --d-base: 200ms;
 
-  /* radii — minimal */
-  --r-sm: 4px;
-  --r-md: 6px;
-  --r-lg: 10px;
-  --r-pill: 999px;
+  /* ---- radii — small and consistent; no pills ------------------------- */
+  --r-sm: 3px;
+  --r-md: 5px;
 
   color-scheme: light;
 }
 
+/* Dark is a designed counterpart, not an inversion: surfaces lift rather than
+   drop, ink desaturates, and the accent gains lightness to hold contrast. */
 [data-theme='dark'] {
-  --paper: #14130f;
-  --paper-raised: #1c1b16;
-  --ink: #ede8dd;
-  --ink-muted: #8a847a;
-  --ink-faint: #5c5750;
-  --hairline: #2a2823;
-  --hairline-strong: #3a3730;
-  --accent: #6b95c2;
-  --accent-soft: rgba(107, 149, 194, 0.12);
-  --citation: #c68b5b;
-  --citation-soft: rgba(198, 139, 91, 0.12);
+  --paper: #121315;
+  --surface: #191b1e;
+  --surface-2: #212429;
+  --ink: #eceded;
+  --ink-2: #9ca0a7;
+  --ink-3: #6b6f76;
+  --line: #26282c;
+  --line-strong: #363940;
 
-  --grade-a: #6fb38a;
-  --grade-b: #6b95c2;
-  --grade-c: #c9a665;
-  --grade-d: #c68b5b;
-  --grade-f: #c97770;
+  --accent: #8aa8e8;
+  --accent-hover: #a8c0f2;
+  --accent-wash: color-mix(in oklab, var(--accent) 12%, transparent);
+
+  --v-meets: #6cbf95;
+  --v-partial: #8aa8e8;
+  --v-adjacent: #8b8e94;
+  --v-none: #43464c;
+
+  --grade-a: #6cbf95;
+  --grade-b: #8aa8e8;
+  --grade-c: #d0ac63;
+  --grade-d: #c98d5e;
+  --grade-f: #d68078;
 
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --paper: #14130f;
-    --paper-raised: #1c1b16;
-    --ink: #ede8dd;
-    --ink-muted: #8a847a;
-    --ink-faint: #5c5750;
-    --hairline: #2a2823;
-    --hairline-strong: #3a3730;
-    --accent: #6b95c2;
-    --accent-soft: rgba(107, 149, 194, 0.12);
-    --citation: #c68b5b;
-    --citation-soft: rgba(198, 139, 91, 0.12);
-    --grade-a: #6fb38a;
-    --grade-b: #6b95c2;
-    --grade-c: #c9a665;
-    --grade-d: #c68b5b;
-    --grade-f: #c97770;
+  :root:not([data-theme='light']) {
+    --paper: #121315;
+    --surface: #191b1e;
+    --surface-2: #212429;
+    --ink: #eceded;
+    --ink-2: #9ca0a7;
+    --ink-3: #6b6f76;
+    --line: #26282c;
+    --line-strong: #363940;
+
+    --accent: #8aa8e8;
+    --accent-hover: #a8c0f2;
+    --accent-wash: color-mix(in oklab, var(--accent) 12%, transparent);
+
+    --v-meets: #6cbf95;
+    --v-partial: #8aa8e8;
+    --v-adjacent: #8b8e94;
+    --v-none: #43464c;
+
+    --grade-a: #6cbf95;
+    --grade-b: #8aa8e8;
+    --grade-c: #d0ac63;
+    --grade-d: #c98d5e;
+    --grade-f: #d68078;
+
     color-scheme: dark;
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Compatibility layer.
+
+   The section pages were written against the previous token names. Rather than
+   find-and-replace across eight files, the old names are aliased onto the new
+   system so every page inherits the new palette, type and radii at once. Note
+   what this deliberately does:
+
+     --font-display  now resolves to the sans, so headings that opted out of
+                     the global rule follow the new voice
+     --r-pill        now resolves to a small radius, which removes pill buttons
+                     everywhere in one line
+     --citation      collapses into the single accent; the old amber second
+                     accent is gone
+
+   New work should use the real token names. These aliases are a migration
+   convenience, not a second system.
+--------------------------------------------------------------------------- */
+:root,
+[data-theme='dark'],
+:root:not([data-theme='light']) {
+  --paper-raised: var(--surface);
+  --hairline: var(--line);
+  --hairline-strong: var(--line-strong);
+  --ink-muted: var(--ink-2);
+  --ink-faint: var(--ink-3);
+  --accent-soft: var(--accent-wash);
+  --citation: var(--accent);
+  --citation-soft: var(--accent-wash);
+
+  --font-display: var(--font-sans);
+  --font-body: var(--font-sans);
+  --font-mono: var(--font-sans);
+
+  --step--1: var(--t-sm);
+  --step-0: var(--t-base);
+  --step-1: var(--t-lg);
+  --step-2: var(--t-xl);
+  --step-3: var(--t-2xl);
+  --step-4: var(--t-3xl);
+  --step-5: var(--t-4xl);
+
+  --ease-out: var(--ease);
+  --ease-in-out: var(--ease);
+  --d-slow: 300ms;
+
+  --r-lg: var(--r-md);
+  --r-pill: var(--r-md);
+
+  --measure-table: var(--measure-wide);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

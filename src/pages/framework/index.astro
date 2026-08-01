@@ -12,8 +12,7 @@ const totalDisclosures = categories.reduce((sum, c) => sum + c.disclosures.lengt
   <article class="framework">
     <!-- ===== Hero ===== -->
     <header class="fw-hero">
-      <div class="shell shell--prose">
-        <p class="eyebrow">Section 01 · Framework</p>
+      <div class="shell shell--wide">
         <h1 class="fw-hero__title">A four-category disclosure framework for internally deployed models</h1>
         <p class="lede">
           Frontier developers should disclose enough about each internal deployment that a regulator,
@@ -199,13 +198,12 @@ const totalDisclosures = categories.reduce((sum, c) => sum + c.disclosures.lengt
     padding-block: var(--s-8) var(--s-7);
   }
   .fw-hero__title {
-    font-size: var(--step-4);
-    line-height: 1.05;
-    letter-spacing: -0.03em;
-    font-weight: 400;
+    font-size: var(--t-3xl);
+    font-weight: 620;
+    letter-spacing: -0.033em;
+    line-height: 1.03;
     margin: 0 0 var(--s-5);
-    text-wrap: balance;
-    max-width: 22ch;
+    max-width: 20ch;
   }
   .fw-hero .lede em {
     font-style: italic;

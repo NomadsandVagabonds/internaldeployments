@@ -56,41 +56,46 @@ function fmtDate(iso: string): string {
 >
   <article class="dev">
     <header class="dev-hero">
-      <div class="shell shell--prose">
-        <p class="eyebrow">
-          <a href="/scorecard">Scorecard</a> · {developer.name}
-        </p>
-        <h1 class="dev-hero__title">{developer.name}</h1>
-        <p class="dev-hero__note">{developer.note}</p>
+      <div class="shell shell--wide">
+        <nav class="crumb" aria-label="Breadcrumb">
+          <a href="/scorecard">Scorecard</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">{developer.name}</span>
+        </nav>
 
-        <div class="dev-hero__scores">
-          <div class="score-overall">
-            <span class="score-overall__num mono">{overall === null ? '—' : `${overall}%`}</span>
-            <span class="score-overall__label">overall disclosure</span>
+        <div class="dev-hero__grid">
+          <div>
+            <h1 class="dev-hero__title">{developer.name}</h1>
+            <p class="dev-hero__note">{developer.note}</p>
           </div>
-          <dl class="score-cats">
-            {scores.map((s) => {
-              const cat = categories.find((c) => c.slug === s.categorySlug)!;
-              return (
-                <div class="score-cats__item">
-                  <dt>{cat.name}</dt>
-                  <dd class="mono">{s.percent === null ? '—' : `${s.percent}%`}</dd>
-                </div>
-              );
-            })}
-          </dl>
+
+          <div class="dev-hero__scores">
+            <div class="score-overall">
+              <span class="score-overall__num tnum">{overall === null ? '—' : overall}</span>
+              <span class="score-overall__pct">%</span>
+              <span class="score-overall__label">overall disclosure</span>
+            </div>
+            <dl class="score-cats">
+              {scores.map((s) => {
+                const cat = categories.find((c) => c.slug === s.categorySlug)!;
+                return (
+                  <div class="score-cats__item">
+                    <dt>{cat.name}</dt>
+                    <dd class="tnum">{s.percent === null ? '—' : `${s.percent}%`}</dd>
+                  </div>
+                );
+              })}
+            </dl>
+          </div>
         </div>
       </div>
     </header>
 
-    <hr class="rule rule-strong" />
-
     <section class="dev-items">
-      <div class="shell shell--prose">
+      <div class="shell shell--wide">
         {categories.map((category) => (
           <div class="cat" id={category.slug}>
             <h2 class="cat__title">
-              <span class="cat__num mono">{category.number}</span>
               {category.name}
               <span class="cat__pct mono">
                 {categoryScore(developer, category.slug).percent ?? '—'}%
@@ -104,8 +109,8 @@ function fmtDate(iso: string): string {
                 <section class="item" id={item.slug}>
                   <div class="item__head">
                     <h3 class="item__q">
-                      <a href={`#${item.slug}`} class="item__anchor" aria-label="Permalink">§</a>
                       {item.question}
+                      <a href={`#${item.slug}`} class="item__anchor" aria-label="Permalink to this question">#</a>
                     </h3>
                     <div class="item__verdict">
                       <VerdictMark verdict={cell.verdict} priority={item.priority} />
@@ -123,7 +128,7 @@ function fmtDate(iso: string): string {
 
                   {cell.evidence.length > 0 && (
                     <div class="evidence">
-                      <p class="eyebrow">
+                      <p class="label">
                         {cell.evidence.length === 1 ? 'Source' : 'Sources'}
                       </p>
                       <ul class="evidence__list">
@@ -151,8 +156,8 @@ function fmtDate(iso: string): string {
     <hr class="rule" />
 
     <section class="dev-sources">
-      <div class="shell shell--prose">
-        <p class="eyebrow">Appendix</p>
+      <div class="shell shell--wide">
+        <p class="label">Appendix</p>
         <h2 class="dev-sources__title">Every source cited on this page</h2>
         <p class="dev-sources__note">
           {sources.length} documents, retrieved {fmtDate(RETRIEVED)}. Anything
@@ -180,59 +185,124 @@ function fmtDate(iso: string): string {
 </BaseLayout>
 
 <style>
-  .dev-hero { padding-block: var(--s-8) var(--s-6); }
+  .dev-hero {
+    padding-block: clamp(2rem, 4vw, 3rem) clamp(2.5rem, 5vw, 4rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .crumb {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-2);
+    font-size: var(--t-sm);
+    color: var(--ink-3);
+    margin-bottom: var(--s-6);
+  }
+  .crumb a { color: var(--ink-2); }
+  .crumb a:hover { color: var(--accent); }
+  .dev-hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
+  }
   .dev-hero__title {
-    font-size: var(--step-4);
-    letter-spacing: -0.02em;
-    margin-bottom: var(--s-5);
+    font-size: var(--t-3xl);
+    font-weight: 620;
+    letter-spacing: -0.033em;
+    line-height: 1.03;
+    margin: 0 0 var(--s-5);
+    max-width: 20ch;
   }
   .dev-hero__note {
-    font-size: 1.0625rem;
-    line-height: 1.65;
-    color: var(--ink);
+    font-size: var(--t-md);
+    line-height: 1.6;
+    color: var(--ink-2);
+    max-width: 58ch;
+    margin: 0;
   }
 
+  /* Score panel: one large figure with the four category readings beneath it,
+     so the headline number and its components read as one object. */
   .dev-hero__scores {
-    margin-top: var(--s-7);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: var(--s-7);
-    padding-top: var(--s-5);
-    border-top: 1px solid var(--hairline);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: var(--s-5);
   }
-  .score-overall { display: flex; flex-direction: column; gap: var(--s-2); }
-  .score-overall__num { font-size: 2.5rem; line-height: 1; color: var(--ink); }
+  .score-overall {
+    display: flex;
+    align-items: baseline;
+    gap: 0.1rem;
+    flex-wrap: wrap;
+    padding-bottom: var(--s-4);
+    margin-bottom: var(--s-4);
+    border-bottom: 1px solid var(--line);
+  }
+  .score-overall__num {
+    font-size: 3.25rem;
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    color: var(--ink);
+  }
+  .score-overall__pct {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--ink-3);
+    letter-spacing: -0.02em;
+  }
   .score-overall__label {
-    font-size: 0.6875rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
+    flex-basis: 100%;
+    font-size: var(--t-xs);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--ink-3);
+    margin-top: var(--s-2);
   }
   .score-cats {
     display: grid;
-    grid-template-columns: repeat(2, auto);
-    gap: var(--s-3) var(--s-6);
+    gap: var(--s-3);
     margin: 0;
   }
-  .score-cats__item { display: flex; align-items: baseline; gap: var(--s-3); }
-  .score-cats dt { font-size: 0.8125rem; color: var(--ink-muted); }
-  .score-cats dd { margin: 0; font-size: 0.9375rem; color: var(--ink); }
+  .score-cats__item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--s-4);
+  }
+  .score-cats dt { font-size: var(--t-sm); color: var(--ink-2); }
+  .score-cats dd { margin: 0; font-size: var(--t-base); color: var(--ink); font-weight: 500; }
 
   .dev-items { padding-block: var(--s-7); }
 
-  .cat { margin-bottom: var(--s-9); }
+  /* Reading measure preserved inside the wide shell, so the questions share a
+     left edge with the headline above rather than floating in a centred column. */
+  .cat {
+    margin-bottom: clamp(3rem, 6vw, 5rem);
+    max-width: 54rem;
+  }
   .cat__title {
-    font-size: var(--step-2);
+    font-size: var(--t-xl);
     display: flex;
     align-items: baseline;
-    gap: var(--s-4);
-    padding-bottom: var(--s-4);
-    border-bottom: 1px solid var(--hairline-strong);
-    margin-bottom: var(--s-6);
+    gap: var(--s-3);
+    padding-bottom: var(--s-3);
+    border-bottom: 1px solid var(--line-strong);
+    margin-bottom: var(--s-5);
+    letter-spacing: -0.022em;
   }
-  .cat__num { color: var(--ink-faint); font-size: 0.8125rem; }
-  .cat__pct { margin-left: auto; font-size: 1rem; color: var(--ink-muted); }
+  .cat__num {
+    color: var(--ink-3);
+    font-size: var(--t-sm);
+    font-weight: 500;
+    min-width: 1.4rem;
+  }
+  .cat__pct {
+    margin-left: auto;
+    font-size: var(--t-md);
+    font-weight: 550;
+    color: var(--ink-2);
+  }
 
   .item {
     padding-block: var(--s-6);
@@ -253,12 +323,17 @@ function fmtDate(iso: string): string {
     flex: 1 1 20rem;
     position: relative;
   }
+  /* Permalink reveals on hover or focus rather than sitting permanently
+     beside every question. */
   .item__anchor {
-    color: var(--ink-faint);
-    border-bottom: 0;
-    margin-right: var(--s-2);
+    color: var(--ink-3);
+    margin-left: var(--s-2);
     font-size: 0.875rem;
+    opacity: 0;
+    transition: opacity var(--d-fast) var(--ease);
   }
+  .item:hover .item__anchor,
+  .item__anchor:focus-visible { opacity: 1; }
   .item__anchor:hover { color: var(--accent); }
   .item__verdict { flex: 0 0 auto; }
 
@@ -269,11 +344,10 @@ function fmtDate(iso: string): string {
     margin: var(--s-2) 0 0;
   }
   .item__prio {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--citation);
+    font-size: var(--t-xs);
+    font-weight: 550;
+    letter-spacing: 0;
+    color: var(--accent);
     margin: var(--s-3) 0 0;
   }
   .item__rationale {
@@ -290,9 +364,10 @@ function fmtDate(iso: string): string {
   .evidence__item + .evidence__item { margin-top: var(--s-5); }
   .evidence__quote {
     margin: 0 0 var(--s-3);
-    font-family: var(--font-display);
-    font-size: 0.9375rem;
-    line-height: 1.55;
+    /* the one place the serif appears on this page — quoted source text */
+    font-family: var(--font-serif);
+    font-size: 1.0625rem;
+    line-height: 1.5;
     color: var(--ink);
     quotes: '“' '”';
   }
@@ -303,12 +378,13 @@ function fmtDate(iso: string): string {
   .evidence__tp {
     display: inline-block;
     margin-left: var(--s-2);
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--citation);
-    border: 1px solid var(--hairline);
+    font-size: var(--t-xs);
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--ink-2);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
     border-radius: var(--r-sm);
     padding: 0 0.35em;
   }
@@ -325,6 +401,14 @@ function fmtDate(iso: string): string {
     border-top: 1px solid var(--hairline);
     font-size: 0.8125rem;
     color: var(--ink-muted);
+  }
+
+  @media (max-width: 900px) {
+    .dev-hero__grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-6);
+    }
+    .dev-hero__title { max-width: none; }
   }
 
   @media (max-width: 720px) {

@@ -15,7 +15,8 @@ const {
   noChrome = false,
 } = Astro.props;
 
-const fullTitle = title === 'IDM Disclosure' ? title : `${title} · IDM Disclosure`;
+const SITE_NAME = 'Internal Deployments';
+const fullTitle = title === SITE_NAME ? title : `${title} — ${SITE_NAME}`;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 ---
 

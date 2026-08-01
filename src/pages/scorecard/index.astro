@@ -34,16 +34,27 @@ const emptyShare = Math.round((emptyCells / totalCells) * 100);
   <article class="sc">
     <!-- ===== Hero ===== -->
     <header class="sc-hero">
-      <div class="shell shell--prose">
-        <p class="eyebrow">Section 02 · Scorecard</p>
-        <h1 class="sc-hero__title">What developers actually disclose about their internal deployments</h1>
-        <p class="lede">
-          Six frontier developers, graded against all fifteen disclosure questions in the framework,
-          on the evidence of what they have published. Every verdict cites a primary source.
-        </p>
+      <div class="shell shell--wide sc-hero__grid">
+        <div class="sc-hero__main">
+          <h1 class="sc-hero__title">
+            What developers actually disclose about their internal deployments
+          </h1>
+          <p class="sc-hero__summary">
+            As of {lastUpdated}, <strong>{emptyShare}%</strong> of the {totalCells}
+            developer-question pairs assessed here are answered obliquely or not at all. The
+            strongest disclosure clusters in <strong>safety mitigations</strong>, where three
+            developers publish real detail about how internal agents are monitored. The weakest is
+            <strong>capabilities</strong>: one developer has published a substantive account of how
+            its internal models diverge from the models it ships, and no developer has disclosed how
+            internal inference is allocated between the two.
+          </p>
+          <a href="/scorecard/methodology" class="arrow-link">
+            How these grades are assigned <span aria-hidden="true">→</span>
+          </a>
+        </div>
 
         <aside class="caveat">
-          <p class="eyebrow">Read this first</p>
+          <p class="label">Read this first</p>
           <p class="caveat__text">
             This grades <strong>disclosure</strong>, not safety. A high score means a developer has
             published a great deal about its internal deployments — not that those deployments are
@@ -52,26 +63,8 @@ const emptyShare = Math.round((emptyCells / totalCells) * 100);
             outside, which is the argument for disclosure in the first place.
           </p>
         </aside>
-
-        <p class="sc-hero__summary">
-          As of <strong>{lastUpdated}</strong>, <strong>{emptyShare}%</strong> of the
-          {totalCells} developer-question pairs assessed here are answered obliquely or not at all.
-          The strongest disclosure clusters in <strong>safety mitigations</strong>, where three
-          developers publish real detail about how internal agents are monitored. The weakest is
-          <strong>capabilities</strong>: one developer has published a substantive account of how
-          its internal models diverge from the models it ships, and no developer has disclosed how
-          internal inference is allocated between the two.
-        </p>
-
-        <div class="sc-hero__actions">
-          <a href="/scorecard/methodology" class="btn-link">
-            How these grades are assigned <span aria-hidden="true">→</span>
-          </a>
-        </div>
       </div>
     </header>
-
-    <hr class="rule rule-strong" />
 
     <!-- ===== Overview grid ===== -->
     <section class="sc-grid-section">
@@ -229,45 +222,62 @@ const emptyShare = Math.round((emptyCells / totalCells) * 100);
 </BaseLayout>
 
 <style>
-  .sc-hero { padding-block: var(--s-8) var(--s-6); }
+  .sc-hero {
+    padding-block: clamp(3rem, 7vw, 5.5rem) clamp(2.5rem, 5vw, 4rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .sc-hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
+  }
   .sc-hero__title {
-    font-size: var(--step-4);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    margin-bottom: var(--s-5);
+    font-size: var(--t-3xl);
+    font-weight: 620;
+    line-height: 1.03;
+    letter-spacing: -0.033em;
+    margin: 0 0 var(--s-5);
+    max-width: 20ch;
   }
   .sc-hero__summary {
-    margin-top: var(--s-6);
-    font-size: 1.0625rem;
-    line-height: 1.65;
+    font-size: var(--t-md);
+    line-height: 1.6;
+    color: var(--ink-2);
+    max-width: 56ch;
+    margin-bottom: var(--s-5);
   }
-  .sc-hero__actions { margin-top: var(--s-6); }
 
+  /* The caveat sits alongside the summary rather than under it — it is a
+     condition on how the whole page should be read, not a footnote to it. */
   .caveat {
-    margin-top: var(--s-6);
-    border-left: 2px solid var(--accent);
-    padding: var(--s-1) 0 var(--s-1) var(--s-5);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: var(--s-5);
   }
   .caveat__text {
-    font-size: 0.9375rem;
+    font-size: var(--t-base);
     line-height: 1.6;
-    color: var(--ink-muted);
-    margin: var(--s-2) 0 0;
+    color: var(--ink-2);
+    margin: 0;
+    max-width: none;
   }
+  .caveat__text strong { color: var(--ink); }
 
   .section-title {
-    font-size: var(--step-2);
-    margin: var(--s-2) 0 var(--s-3);
+    font-size: var(--t-xl);
+    margin: 0 0 var(--s-3);
   }
   .section-note {
-    color: var(--ink-muted);
-    font-size: 0.9375rem;
+    color: var(--ink-2);
+    font-size: var(--t-base);
     line-height: 1.6;
-    max-width: 46rem;
+    max-width: 62ch;
     margin-bottom: var(--s-6);
   }
 
-  .sc-grid-section, .sc-items, .sc-devs { padding-block: var(--s-7); }
+  .sc-grid-section, .sc-items, .sc-devs { padding-block: clamp(2.5rem, 5vw, 4rem); }
 
   /* wide tables scroll inside their own box; the page never scrolls sideways */
   .grid-scroll { overflow-x: auto; }
@@ -285,39 +295,48 @@ const emptyShare = Math.round((emptyCells / totalCells) * 100);
     vertical-align: baseline;
   }
   .sc-grid thead th, .sc-items__table thead th {
-    font-family: var(--font-body);
-    font-weight: 500;
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    border-bottom-color: var(--hairline-strong);
+    font-weight: 550;
+    font-size: var(--t-xs);
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--ink-3);
+    border-bottom-color: var(--line-strong);
     white-space: nowrap;
+    padding-bottom: var(--s-3);
   }
 
-  .sc-grid__dev { min-width: 11rem; font-weight: 400; }
-  .sc-grid__dev a { border-bottom-color: var(--hairline); }
+  .sc-grid tbody tr { transition: background-color var(--d-fast) var(--ease); }
+  .sc-grid tbody tr:hover { background: var(--surface); }
+  .sc-grid__dev { min-width: 11rem; font-weight: 500; }
+  .sc-grid__dev a { color: var(--ink); }
+  .sc-grid__dev a:hover { color: var(--accent); }
   .sc-grid__cat { min-width: 8.5rem; }
   .sc-grid__total { min-width: 6rem; }
-  .sc-grid__totalnum { font-size: 1.0625rem; color: var(--ink); }
+  .sc-grid__totalnum {
+    font-size: 1.375rem;
+    font-weight: 550;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+  }
 
-  /* percentage with a hairline fill rule underneath — an editorial rule, not a
-     dashboard bar */
-  .pct { display: inline-flex; flex-direction: column; gap: var(--s-2); min-width: 4.5rem; }
+  /* Percentage over a hairline fill rule. The rule is the width of the column,
+     so the six rows read as a comparison without becoming a chart. */
+  .pct { display: flex; flex-direction: column; gap: 0.4rem; }
   .pct__bar {
     height: 2px;
-    background: var(--hairline);
+    background: var(--line);
     position: relative;
     order: 2;
+    max-width: 5.5rem;
   }
   .pct__bar::after {
     content: '';
     position: absolute;
     inset: 0 auto 0 0;
     width: var(--fill);
-    background: var(--accent);
+    background: var(--ink-2);
   }
-  .pct__num { order: 1; font-size: 0.9375rem; color: var(--ink); }
+  .pct__num { order: 1; font-size: var(--t-md); color: var(--ink); font-weight: 450; }
 
   .cat-block { margin-bottom: var(--s-8); }
   .cat-block__title {
@@ -339,11 +358,10 @@ const emptyShare = Math.round((emptyCells / totalCells) * 100);
   .prio-key {
     display: inline-block;
     margin-top: var(--s-2);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--citation);
+    font-size: var(--t-xs);
+    font-weight: 550;
+    letter-spacing: 0;
+    color: var(--accent);
   }
 
   .legend { margin-top: var(--s-6); }
@@ -370,14 +388,28 @@ const emptyShare = Math.round((emptyCells / totalCells) * 100);
     gap: var(--s-5);
     margin-bottom: var(--s-3);
   }
-  .dev-row__name { font-size: var(--step-1); margin: 0; }
-  .dev-row__name a { border-bottom-color: var(--hairline); }
-  .dev-row__score { font-size: 1.25rem; color: var(--ink); }
+  .dev-row__name { font-size: var(--t-xl); margin: 0; letter-spacing: -0.022em; }
+  .dev-row__name a { color: var(--ink); }
+  .dev-row__name a:hover { color: var(--accent); }
+  .dev-row__score {
+    font-size: 1.75rem;
+    font-weight: 550;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
   .dev-row__note {
     color: var(--ink-muted);
     line-height: 1.65;
     max-width: 46rem;
     margin-bottom: var(--s-4);
+  }
+
+  @media (max-width: 900px) {
+    .sc-hero__grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-6);
+    }
+    .sc-hero__title { max-width: none; }
   }
 
   @media (max-width: 720px) {

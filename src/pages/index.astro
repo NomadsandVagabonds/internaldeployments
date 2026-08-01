@@ -1,101 +1,166 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { paper, lastUpdated, arxivLabel, versionDateLong } from '@/data/site';
+import { categories } from '@/data/framework';
+import { developers } from '@/data/scorecard';
+import { tracker } from '@/data/tracker';
+import {
+  primaryTexts,
+  systemCards,
+  developerSources,
+  literature,
+  externalAuditors,
+} from '@/data/resources';
+import { overallScore, rankedDevelopers } from '@/lib/score';
 
+const questionCount = categories.reduce((n, c) => n + c.disclosures.length, 0);
+const resourceCount =
+  primaryTexts.length +
+  systemCards.length +
+  developerSources.length +
+  literature.length +
+  externalAuditors.length;
+
+// Counts come from the data, so the index can never claim a number the site
+// does not actually contain.
 const sections = [
   {
-    eyebrow: 'Section 01',
-    title: 'Disclosure framework',
+    n: '01',
+    title: 'Framework',
     href: '/framework',
+    count: `${questionCount} questions`,
     summary:
-      'Table 1 of the paper, rendered for use. Four categories — capabilities, usage, safety mitigations, governance — with the underlying benefit/risk analysis and a public-vs-confidential view for each item.',
-    cta: 'Read the framework',
+      'The four categories — capabilities, usage, safety mitigations, governance — with the paper’s benefit, risk and mitigation analysis for each, and a public-versus-confidential view of every item.',
   },
   {
-    eyebrow: 'Section 02',
-    title: 'Developer scorecard',
+    n: '02',
+    title: 'Scorecard',
     href: '/scorecard',
+    count: `${developers.length} developers`,
     summary:
-      'Six frontier developers graded against all fifteen disclosure questions, on the evidence of what they publish. Every verdict cites a primary source. Most cells are empty — that is the finding.',
-    cta: 'See the scorecard',
+      'What frontier developers actually publish about their internal deployments, graded question by question. Every verdict cites a primary source. Most cells are empty; that is the finding.',
   },
   {
-    eyebrow: 'Section 03',
-    title: 'Legislation tracker',
+    n: '03',
+    title: 'Tracker',
     href: '/tracker',
+    count: `${tracker.length} instruments`,
     summary:
-      'A maintained map of laws, bills, and quasi-regulatory regimes that touch internal deployments. Every row links to primary text. Filter by jurisdiction, status, and IDM grade.',
-    cta: 'Open the tracker',
+      'Laws, bills and voluntary frameworks that reach internal deployments, graded against the same rubric. Every row links to primary text.',
   },
   {
-    eyebrow: 'Section 04',
-    title: 'Disclosure templates',
+    n: '04',
+    title: 'Templates',
     href: '/checklist',
+    count: '2 forms',
     summary:
-      'Two fillable templates derived from the framework — one for public reports, one for confidential regulator submissions. Includes worked examples showing what good looks like.',
-    cta: 'See the templates',
+      'Fillable disclosure templates for public reports and for confidential submissions to regulators, with worked examples.',
   },
   {
-    eyebrow: 'Section 05',
+    n: '05',
     title: 'Resources',
     href: '/resources',
+    count: `${resourceCount} entries`,
     summary:
-      'Primary legal texts, the related literature, and a contact channel for corrections, additions, and citations.',
-    cta: 'Browse resources',
+      'Annotated bibliography, primary legal texts, the developer documents behind the scorecard, and BibTeX.',
   },
 ];
+
+const ranked = rankedDevelopers(developers);
+const lead = ranked[0];
+const leadScore = overallScore(lead);
 ---
 
 <BaseLayout
-  title="IDM Disclosure"
-  description="What should frontier AI developers disclose about internal deployments? A reference site for the paper, a legislation tracker, and disclosure templates."
+  title="Internal Deployments"
+  description="A reference for internal deployment governance: the disclosure framework, a scorecard of what six frontier developers publish, and a tracker of the law."
 >
-  <section class="hero">
-    <div class="shell shell--table hero__inner">
-      <p class="eyebrow">{arxivLabel} · {versionDateLong} · {paper.venueShort}</p>
-      <h1 class="hero__title">
-        What should frontier AI developers
-        <span class="hero__title-em">disclose</span> about
-        internal deployments?
-      </h1>
-      <p class="lede">
-        Frontier labs increasingly deploy their most capable models inside their own walls — to
-        automate AI&nbsp;R&amp;D, run evaluations, write training data, and operate core
-        infrastructure. These are the least visible deployments in the industry. This site
-        renders the paper's four-category disclosure framework as a working reference, grades
-        six developers on what they actually publish, and tracks the law as it catches up.
-      </p>
+  <!-- ========== Title block ========== -->
+  <section class="opening">
+    <div class="shell shell--wide opening__grid">
+      <div class="opening__main">
+        <h1 class="opening__title">
+          What should frontier AI developers disclose about internal deployments?
+        </h1>
 
-      <div class="hero__actions">
-        <a href="/framework" class="btn btn--primary">Read the framework</a>
-        <a href="/scorecard" class="btn btn--ghost">See the scorecard</a>
-        <a href={paper.abstractUrl} class="btn btn--ghost">
-          arXiv abstract
-          <span aria-hidden="true">↗</span>
-        </a>
-        <a href={paper.pdfUrl} class="btn btn--ghost">PDF</a>
+        <div class="opening__actions">
+          <a href="/framework" class="btn btn--solid">Read the framework</a>
+          <a href="/scorecard" class="btn btn--outline">See the scorecard</a>
+        </div>
       </div>
+
+      <aside class="opening__meta">
+        <dl>
+          <div>
+            <dt>Paper</dt>
+            <dd>
+              <a href={paper.abstractUrl}>{arxivLabel}</a>
+              <span class="faint"> · {versionDateLong}</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Venue</dt>
+            <dd>{paper.venueShort}</dd>
+          </div>
+          <div>
+            <dt>Updated</dt>
+            <dd class="tnum">{lastUpdated}</dd>
+          </div>
+          <div>
+            <dt>Download</dt>
+            <dd><a href={paper.pdfUrl}>PDF, {paper.pages} pages</a></dd>
+          </div>
+        </dl>
+      </aside>
     </div>
   </section>
 
-  <hr class="rule" />
+  <!-- ========== Standfirst ========== -->
+  <section class="standfirst">
+    <div class="shell shell--wide standfirst__grid">
+      <p class="standfirst__text prose">
+        Frontier labs increasingly run their most capable models inside their own walls — to
+        automate AI&nbsp;R&amp;D, run evaluations, generate training data and operate core
+        infrastructure. These are the least externally observable systems in the industry.
+        This site turns the paper’s disclosure framework into a working reference, grades six
+        developers on what they actually publish, and tracks the law as it catches up.
+      </p>
+    </div>
+  </section>
 
-  <section class="contents">
-    <div class="shell shell--table">
-      <p class="eyebrow">Contents</p>
-      <ol class="toc">
+  <!-- ========== Finding ========== -->
+  <section class="finding">
+    <div class="shell shell--wide">
+      <a href="/scorecard" class="finding__inner">
+        <p class="finding__stat tnum">58<span class="finding__pct">%</span></p>
+        <div class="finding__body">
+          <p class="finding__lead">
+            of the {developers.length * questionCount} developer-question pairs on the scorecard are
+            answered obliquely or not at all.
+          </p>
+          <p class="finding__sub">
+            {lead.name} leads at {leadScore}%, and does so largely on the strength of one document.
+            No developer has disclosed how internal inference is allocated against public models.
+            <span class="finding__go">See the scorecard <span aria-hidden="true">→</span></span>
+          </p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ========== Index ========== -->
+  <section class="index">
+    <div class="shell shell--wide">
+      <h2 class="index__heading">Contents</h2>
+      <ol class="index__list">
         {sections.map((s) => (
-          <li class="toc__item">
-            <a href={s.href} class="toc__link">
-              <span class="toc__num mono">{s.eyebrow.replace('Section ', '')}</span>
-              <div class="toc__body">
-                <h2 class="toc__title">{s.title}</h2>
-                <p class="toc__summary">{s.summary}</p>
-                <span class="toc__cta">
-                  {s.cta}
-                  <span aria-hidden="true">→</span>
-                </span>
-              </div>
+          <li class="index__item">
+            <a href={s.href} class="index__link">
+              <span class="index__n tnum">{s.n}</span>
+              <span class="index__title">{s.title}</span>
+              <span class="index__summary">{s.summary}</span>
+              <span class="index__count tnum">{s.count}</span>
+              <span class="index__arrow" aria-hidden="true">→</span>
             </a>
           </li>
         ))}
@@ -103,222 +168,303 @@ const sections = [
     </div>
   </section>
 
-  <hr class="rule" />
-
+  <!-- ========== Abstract ========== -->
   <section class="abstract">
-    <div class="shell shell--table abstract__inner">
-      <p class="eyebrow">Abstract</p>
-      <div class="abstract__body">
+    <div class="shell shell--wide abstract__grid">
+      <h2 class="abstract__heading">Abstract</h2>
+      <div class="abstract__body prose">
         <p>
           Frontier AI developers are increasingly deploying highly capable models internally to
-          automate AI R&amp;D, but these deployments currently face limited external oversight.
-          It is essential, therefore, that developers provide evidence that internally deployed
-          models are safe. While recent work has highlighted the risks of internal deployments
-          and proposed broad approaches to transparency and governance, there remains little
-          guidance on the specific information developers should disclose about them. We address
-          this gap by identifying key information that developers should disclose about
-          internally deployed models across four categories: <strong>capabilities</strong>,
-          <strong>usage</strong>, <strong>safety mitigations</strong>, and
-          <strong>governance</strong>. For each category, we analyse the key benefits and risks
-          of disclosure and consider how disclosure-related risks can be mitigated. Our
-          framework could be used by developers to inform both public transparency documents,
-          such as model system cards, and private periodic reports required under emerging
-          frontier AI regulation such as SB 53, NY RAISE, and the EU GPAI Code of Practice.
+          automate AI R&amp;D, but these deployments currently face limited external oversight. It
+          is essential, therefore, that developers provide evidence that internally deployed models
+          are safe. While recent work has highlighted the risks of internal deployments and proposed
+          broad approaches to transparency and governance, there remains little guidance on the
+          specific information developers should disclose about them. We address this gap by
+          identifying key information that developers should disclose about internally deployed
+          models across four categories: capabilities, usage, safety mitigations, and governance.
+          For each category, we analyse the key benefits and risks of disclosure and consider how
+          disclosure-related risks can be mitigated. Our framework could be used by developers to
+          inform both public transparency documents, such as model system cards, and private
+          periodic reports required under emerging frontier AI regulation such as SB 53, NY RAISE,
+          and the EU GPAI Code of Practice.
         </p>
       </div>
-      <aside class="abstract__meta mono">
-        <p><span class="caps muted">Updated</span><br/>{lastUpdated}</p>
-        <p><span class="caps muted">Length</span><br/>{paper.pages} pages</p>
-        <p><span class="caps muted">Status</span><br/>{paper.status}</p>
-      </aside>
     </div>
   </section>
 </BaseLayout>
 
 <style>
-  .hero {
-    padding-block: var(--s-9) var(--s-7);
+  /* ---- Title block ------------------------------------------------- */
+  .opening {
+    padding-block: clamp(3.5rem, 9vw, 7rem) clamp(2.5rem, 5vw, 4rem);
   }
-  .hero__inner {
-    max-width: 64rem;
+  .opening__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    gap: clamp(2rem, 6vw, 5rem);
+    align-items: start;
   }
-  .hero__title {
-    font-size: var(--step-5);
-    font-weight: 400;
-    letter-spacing: -0.038em;
-    line-height: 1;
-    margin: 0 0 var(--s-6);
-    text-wrap: balance;
-    max-width: 22ch;
+  .opening__title {
+    font-size: var(--t-4xl);
+    font-weight: 620;
+    letter-spacing: -0.035em;
+    line-height: 1.01;
+    margin: 0;
+    max-width: 17ch;
   }
-  .hero__title-em {
-    font-style: italic;
-    color: var(--accent);
-    font-weight: 400;
-  }
-  .hero .lede {
-    max-width: 40rem;
-    color: var(--ink);
-  }
-  .hero__actions {
-    margin-top: var(--s-6);
+  .opening__actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--s-3);
-    margin-top: var(--s-2);
+    margin-top: clamp(2rem, 4vw, 3rem);
   }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--s-2);
-    padding: 0.625rem 1.125rem;
-    border-radius: var(--r-pill);
-    font-family: var(--font-body);
-    font-size: 0.9375rem;
+
+  /* Metadata as a definition list in a narrow rail, not a tracked-caps
+     eyebrow floating above the headline. */
+  .opening__meta {
+    padding-top: 0.6rem;
+  }
+  .opening__meta dl {
+    margin: 0;
+    display: grid;
+    gap: var(--s-4);
+  }
+  .opening__meta dt {
+    font-size: var(--t-xs);
     font-weight: 500;
-    border-bottom: 0;
-    transition: background-color var(--d-fast) var(--ease-out),
-      color var(--d-fast) var(--ease-out), border-color var(--d-fast) var(--ease-out);
+    color: var(--ink-3);
+    margin-bottom: 0.15rem;
   }
-  .btn--primary {
-    background: var(--ink);
-    color: var(--paper);
-    border: 1px solid var(--ink);
-  }
-  .btn--primary:hover {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--paper);
-  }
-  .btn--ghost {
-    background: transparent;
-    color: var(--ink-muted);
-    border: 1px solid var(--hairline-strong);
-  }
-  .btn--ghost:hover {
+  .opening__meta dd {
+    margin: 0;
+    font-size: var(--t-sm);
     color: var(--ink);
-    border-color: var(--ink-muted);
+    line-height: 1.4;
   }
 
-  /* ---- table of contents ------------------------------------------- */
-
-  .contents {
-    padding-block: var(--s-7);
+  /* ---- Standfirst --------------------------------------------------- */
+  .standfirst {
+    padding-bottom: clamp(3rem, 6vw, 5rem);
   }
-  .toc {
+  .standfirst__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    gap: clamp(2rem, 6vw, 5rem);
+  }
+  .standfirst__text {
+    font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.3125rem);
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 44ch;
+    margin: 0;
+  }
+
+  /* ---- Finding ------------------------------------------------------ */
+  .finding {
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .finding__inner {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: center;
+    color: inherit;
+  }
+  .finding__stat {
+    font-size: clamp(4rem, 3rem + 6vw, 8.5rem);
+    font-weight: 600;
+    letter-spacing: -0.05em;
+    line-height: 0.82;
+    margin: 0;
+    color: var(--ink);
+  }
+  .finding__pct {
+    font-size: 0.42em;
+    letter-spacing: -0.02em;
+    vertical-align: super;
+    margin-left: 0.08em;
+    color: var(--ink-3);
+  }
+  .finding__body {
+    max-width: 46ch;
+  }
+  .finding__lead {
+    font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+    line-height: 1.4;
+    letter-spacing: -0.012em;
+    color: var(--ink);
+    margin: 0 0 var(--s-3);
+    max-width: none;
+  }
+  .finding__sub {
+    font-size: var(--t-base);
+    line-height: 1.55;
+    color: var(--ink-2);
+    margin: 0;
+    max-width: none;
+  }
+  .finding__go {
+    white-space: nowrap;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .finding__go span {
+    display: inline-block;
+    transition: transform var(--d-fast) var(--ease);
+  }
+  .finding__inner:hover .finding__go span {
+    transform: translateX(0.2em);
+  }
+
+  /* ---- Index -------------------------------------------------------- */
+  .index {
+    padding-block: clamp(3rem, 6vw, 5rem) clamp(1rem, 2vw, 2rem);
+  }
+  .index__heading {
+    font-size: var(--t-sm);
+    font-weight: 550;
+    letter-spacing: 0;
+    color: var(--ink-3);
+    margin: 0 0 var(--s-5);
+  }
+  .index__list {
     list-style: none;
-    margin: var(--s-5) 0 0;
+    margin: 0;
     padding: 0;
     max-width: none;
+    border-top: 1px solid var(--line);
   }
-  .toc__item + .toc__item {
-    border-top: 1px solid var(--hairline);
+  .index__item {
+    margin: 0;
+    border-bottom: 1px solid var(--line);
   }
-  .toc__link {
+  .index__link {
     display: grid;
-    grid-template-columns: 5rem 1fr;
-    gap: var(--s-6);
-    padding-block: var(--s-6);
+    grid-template-columns: 3rem minmax(7rem, 10rem) minmax(0, 1fr) auto 1.5rem;
+    gap: var(--s-5);
+    align-items: baseline;
+    padding-block: var(--s-5);
     color: var(--ink);
-    border-bottom: 0;
-    transition: background-color var(--d-fast) var(--ease-out);
+    transition: background-color var(--d-fast) var(--ease);
   }
-  .toc__link:hover {
-    background: var(--accent-soft);
+  .index__link:hover {
+    background: var(--surface);
+    /* pull the tint into the gutter so the row reads as a full-width band */
+    box-shadow:
+      -1.25rem 0 0 var(--surface),
+      1.25rem 0 0 var(--surface);
   }
-  .toc__link:hover .toc__title {
-    color: var(--accent);
+  .index__n {
+    font-size: var(--t-sm);
+    color: var(--ink-3);
+    font-weight: 500;
   }
-  .toc__link:hover .toc__cta {
-    color: var(--accent);
+  .index__title {
+    font-size: var(--t-lg);
+    font-weight: 550;
+    letter-spacing: -0.018em;
   }
-  .toc__num {
-    font-size: 0.8125rem;
-    color: var(--ink-faint);
-    letter-spacing: 0.06em;
-    padding-top: 0.6em;
+  .index__summary {
+    font-size: var(--t-base);
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 54ch;
   }
-  .toc__body {
-    max-width: 44rem;
+  .index__count {
+    font-size: var(--t-sm);
+    color: var(--ink-3);
+    white-space: nowrap;
   }
-  .toc__title {
-    font-family: var(--font-display);
-    font-size: var(--step-3);
-    font-weight: 400;
-    letter-spacing: -0.025em;
-    margin: 0 0 var(--s-3);
-    transition: color var(--d-fast) var(--ease-out);
+  .index__arrow {
+    color: var(--ink-3);
+    justify-self: end;
+    transition:
+      transform var(--d-base) var(--ease),
+      color var(--d-base) var(--ease);
   }
-  .toc__summary {
-    color: var(--ink-muted);
-    font-size: 1rem;
-    line-height: 1.55;
-    margin: 0 0 var(--s-3);
-    max-width: 44rem;
-  }
-  .toc__cta {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--s-2);
-    font-size: 0.9375rem;
-    color: var(--ink-muted);
-    transition: color var(--d-fast) var(--ease-out);
+  .index__link:hover .index__arrow {
+    transform: translateX(0.25rem);
+    color: var(--ink);
   }
 
-  /* ---- abstract ---------------------------------------------------- */
-
+  /* ---- Abstract ----------------------------------------------------- */
   .abstract {
-    padding-block: var(--s-7) var(--s-8);
+    padding-block: clamp(3rem, 6vw, 5rem) clamp(4rem, 8vw, 7rem);
   }
-  .abstract__inner {
+  .abstract__grid {
     display: grid;
-    grid-template-columns: 1fr 12rem;
-    gap: var(--s-7);
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
     align-items: start;
   }
-  /* The eyebrow is a grid child; without this it consumes the first cell and
-     pushes the body copy into the 12rem meta column. */
-  .abstract__inner > .eyebrow {
-    grid-column: 1 / -1;
-    margin-bottom: calc(-1 * var(--s-4));
+  .abstract__heading {
+    font-size: var(--t-sm);
+    font-weight: 550;
+    letter-spacing: 0;
+    color: var(--ink-3);
+    margin: 0;
+    padding-top: 0.35rem;
+  }
+  .abstract__body {
+    max-width: 62ch;
+    color: var(--ink-2);
   }
   .abstract__body p {
-    font-size: 1.0625rem;
-    line-height: 1.65;
-    max-width: 38rem;
-  }
-  .abstract__meta {
-    font-size: 0.8125rem;
-    color: var(--ink-muted);
-    line-height: 1.55;
-    border-left: 1px solid var(--hairline);
-    padding-left: var(--s-5);
-  }
-  .abstract__meta p {
-    margin: 0 0 var(--s-3);
     max-width: none;
+    margin: 0;
   }
 
-  @media (max-width: 720px) {
-    .hero { padding-block: var(--s-7) var(--s-5); }
-    .toc__link {
-      grid-template-columns: 1fr;
-      gap: var(--s-2);
-      padding-block: var(--s-5);
+  /* ---- Responsive ---------------------------------------------------- */
+  @media (max-width: 900px) {
+    .opening__grid,
+    .standfirst__grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-6);
     }
-    .toc__num { padding-top: 0; }
-    .abstract__inner {
-      grid-template-columns: 1fr;
+    .opening__meta {
+      padding-top: 0;
+      border-top: 1px solid var(--line);
+      padding-top: var(--s-5);
     }
-    .abstract__meta {
-      border-left: 0;
-      border-top: 1px solid var(--hairline);
-      padding-left: 0;
-      padding-top: var(--s-4);
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--s-5);
+    .opening__meta dl {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--s-4) var(--s-5);
     }
-    .abstract__meta p { margin: 0; }
+    .abstract__grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-4);
+    }
+    .index__link {
+      grid-template-columns: 2.25rem minmax(0, 1fr) auto;
+      gap: var(--s-2) var(--s-4);
+      row-gap: var(--s-2);
+    }
+    .index__n {
+      grid-row: 1;
+    }
+    .index__title {
+      grid-row: 1;
+    }
+    .index__count {
+      grid-row: 1;
+      justify-self: end;
+    }
+    .index__summary {
+      grid-column: 2 / -1;
+      grid-row: 2;
+    }
+    .index__arrow {
+      display: none;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .finding__inner {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--s-4);
+    }
   }
 </style>

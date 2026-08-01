@@ -55,10 +55,12 @@ const changelog = [
 >
   <article class="mth">
     <header class="mth-hero">
-      <div class="shell shell--prose">
-        <p class="eyebrow">
-          <a href="/scorecard">Scorecard</a> · Methodology
-        </p>
+      <div class="shell shell--wide">
+        <nav class="crumb" aria-label="Breadcrumb">
+          <a href="/scorecard">Scorecard</a>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Methodology</span>
+        </nav>
         <h1 class="mth-hero__title">How these grades are assigned</h1>
         <p class="lede">
           The scorecard applies Table 1 of the paper as a rubric. Fifteen questions, six developers,
@@ -69,7 +71,7 @@ const changelog = [
 
     <hr class="rule rule-strong" />
 
-    <div class="shell shell--prose mth-body">
+    <div class="shell shell--wide mth-body">
       <section class="mth-sec" id="what-this-measures">
         <h2>What this measures — and what it does not</h2>
         <p>
@@ -257,11 +259,33 @@ const changelog = [
 </BaseLayout>
 
 <style>
-  .mth-hero { padding-block: var(--s-8) var(--s-6); }
+  .mth-hero {
+    padding-block: clamp(2rem, 4vw, 3rem) clamp(2.5rem, 5vw, 4rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .crumb {
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-2);
+    font-size: var(--t-sm);
+    color: var(--ink-3);
+    margin-bottom: var(--s-6);
+  }
+  .crumb a { color: var(--ink-2); }
+  .crumb a:hover { color: var(--accent); }
+  /* long-form policy text keeps a reading measure inside the wide shell */
+  .mth-sec > p,
+  .mth-sec .rules,
+  .mth-sec .prio-list { max-width: 60ch; }
+  .mth-sec .scale-table,
+  .mth-sec .changelog { max-width: 62rem; }
   .mth-hero__title {
-    font-size: var(--step-4);
-    letter-spacing: -0.02em;
-    margin-bottom: var(--s-5);
+    font-size: var(--t-3xl);
+    font-weight: 620;
+    letter-spacing: -0.033em;
+    line-height: 1.03;
+    margin: 0 0 var(--s-5);
+    max-width: 20ch;
   }
   .mth-body { padding-block: var(--s-7) var(--s-9); }
 
